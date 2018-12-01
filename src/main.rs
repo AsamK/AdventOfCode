@@ -1,5 +1,6 @@
 use errors::{ACResult, Error};
 
+mod day01;
 mod errors;
 mod utils;
 
@@ -18,6 +19,14 @@ fn main() -> ACResult<()> {
     let lines = utils::read_stdin_lines()?;
 
     let result: String = match day {
+        1 => match level {
+            1 => day01::a01_1(lines),
+            2 => day01::a01_2(lines),
+            _ => Err(Error::new(format!(
+                "Level {} not implemented for day {}",
+                level, day
+            ))),
+        }.map(|r| r.to_string()),
         _ => Err(Error::new(format!("Day {} not implemented", day))),
     }?;
 
