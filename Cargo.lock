@@ -1,0 +1,4 @@
+[[package]]
+name = "advent_of_code_solver"
+version = "0.1.0"
+
