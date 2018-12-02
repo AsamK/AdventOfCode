@@ -1,9 +1,17 @@
-pub mod parser;
+mod parser;
 
-use errors::{ACResult, Error};
 use self::parser::{TuringBlueprint, TuringDirection, TuringState};
+use errors::{ACResult, Error};
+use std::io::Read;
 
-pub fn a25_1(blueprint: &TuringBlueprint) -> ACResult<u32> {
+pub fn get_result<T: Read>(data: T, level: u8) -> ACResult<String> {
+    match level {
+        1 => level_1(&parser::parse_turing(data)?),
+        _ => Err(Error::new(format!("Level {} not implemented", level))),
+    }.map(|r| r.to_string())
+}
+
+pub fn level_1(blueprint: &TuringBlueprint) -> ACResult<u32> {
     let mut state_name = &blueprint.initial_state;
     let mut step = 0;
     let mut cursor: isize = 0;

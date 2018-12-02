@@ -1,5 +1,5 @@
 use errors::{ACResult, Error};
-use std::io::BufRead;
+use std::io::Read;
 
 #[derive(Debug)]
 pub struct TuringBlueprint {
@@ -78,7 +78,7 @@ named!(turing_blueprint<&str, TuringBlueprint>,
   )
 );
 
-pub fn parse_turing<T: BufRead>(mut data: T) -> ACResult<TuringBlueprint> {
+pub fn parse_turing<T: Read>(mut data: T) -> ACResult<TuringBlueprint> {
     let mut contents = String::new();
     data.read_to_string(&mut contents)
         .map_err(|_| Error::new_str("Failed to read stdin"))?;

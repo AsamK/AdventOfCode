@@ -1,7 +1,16 @@
 use errors::{ACResult, Error};
 use std::collections::HashSet;
+use std::io::BufRead;
 
-pub fn a01_1(lines: Vec<String>) -> ACResult<i32> {
+pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {
+    match level {
+        1 => level_1(crate::utils::read_lines(data)?),
+        2 => level_2(crate::utils::read_lines(data)?),
+        _ => Err(Error::new(format!("Level {} not implemented", level))),
+    }.map(|r| r.to_string())
+}
+
+fn level_1(lines: Vec<String>) -> ACResult<i32> {
     let mut freq: i32 = 0;
 
     for line in lines.iter() {
@@ -22,7 +31,7 @@ pub fn a01_1(lines: Vec<String>) -> ACResult<i32> {
     Ok(freq)
 }
 
-pub fn a01_2(lines: Vec<String>) -> ACResult<i32> {
+fn level_2(lines: Vec<String>) -> ACResult<i32> {
     let mut freq = 0;
 
     let mut freqs = HashSet::new();
