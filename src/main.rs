@@ -1,6 +1,7 @@
 use errors::{ACResult, Error};
 
 mod day01;
+mod day02;
 mod errors;
 mod utils;
 
@@ -27,6 +28,14 @@ fn main() -> ACResult<()> {
                 level, day
             ))),
         }.map(|r| r.to_string()),
+        2 => match level {
+            1 => day02::a02_1(lines).map(|r| r.to_string()),
+            2 => day02::a02_2(lines),
+            _ => Err(Error::new(format!(
+                "Level {} not implemented for day {}",
+                level, day
+            ))),
+        },
         _ => Err(Error::new(format!("Day {} not implemented", day))),
     }?;
 
