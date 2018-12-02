@@ -2,12 +2,16 @@ use chrono::Datelike;
 use clap::{App, Arg};
 use errors::{ACResult, Error};
 
+mod advent2017;
 mod advent2018;
 mod errors;
 mod utils;
 
 #[macro_use]
 extern crate clap;
+
+#[macro_use]
+extern crate nom;
 
 extern crate chrono;
 
@@ -74,6 +78,7 @@ fn main() -> ACResult<()> {
     let data = stdin.lock();
 
     let result = match year {
+        2017 => advent2017::get_result(data, day, level),
         2018 => advent2018::get_result(data, day, level),
         _ => Err(Error::new(format!("Year {} is not implemented", year))),
     }?;
