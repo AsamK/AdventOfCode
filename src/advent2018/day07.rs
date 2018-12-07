@@ -60,7 +60,7 @@ fn level_1(lines: Vec<String>) -> ACResult<String> {
         }
         let element = available[0];
         {
-            for (name, deps) in &mut name_to_dependencies_map {
+            for (_, deps) in &mut name_to_dependencies_map {
                 let mut index = None;
                 {
                     for (i, x) in deps.iter().enumerate() {
