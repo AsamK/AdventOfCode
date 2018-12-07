@@ -47,6 +47,8 @@ impl Field {
             }
         }
     }
+
+    #[allow(dead_code)]
     fn print(&self) {
         println!("{:?}", self.inner);
         for y in 0..self.height {
@@ -69,7 +71,7 @@ fn level_1(lines: Vec<String>) -> ACResult<usize> {
             let y = s[1].parse().unwrap();
             Ok(Point { i: i + 1, x, y })
         }).collect::<Result<Vec<_>, _>>()
-        .map_err(|_| Error::new_str("Failed to parse guard line"))?;
+        .map_err(|_| Error::new_str("Failed to parse line"))?;
 
     let max_width = 4 * (infos.iter().max_by_key(|i| i.x).unwrap().x + 1);
     let max_height = 4 * (infos.iter().max_by_key(|i| i.y).unwrap().y + 1);
@@ -158,7 +160,7 @@ fn level_2(lines: Vec<String>) -> ACResult<usize> {
             let y = s[1].parse().unwrap();
             Ok(Point { i: i + 1, x, y })
         }).collect::<Result<Vec<_>, _>>()
-        .map_err(|_| Error::new_str("Failed to parse guard line"))?;
+        .map_err(|_| Error::new_str("Failed to parse line"))?;
 
     let max_width = 4 * (infos.iter().max_by_key(|i| i.x).unwrap().x + 1);
     let max_height = 4 * (infos.iter().max_by_key(|i| i.y).unwrap().y + 1);
