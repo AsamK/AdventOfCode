@@ -8,7 +8,8 @@ pub fn get_result<T: Read>(data: T, level: u8) -> ACResult<String> {
     match level {
         1 => level_1(&parser::parse_turing(data)?),
         _ => Err(Error::new(format!("Level {} not implemented", level))),
-    }.map(|r| r.to_string())
+    }
+    .map(|r| r.to_string())
 }
 
 pub fn level_1(blueprint: &TuringBlueprint) -> ACResult<u32> {

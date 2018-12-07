@@ -70,7 +70,8 @@ fn level_1(lines: Vec<String>) -> ACResult<usize> {
             let x = s[0].parse().unwrap();
             let y = s[1].parse().unwrap();
             Ok(Point { i: i + 1, x, y })
-        }).collect::<Result<Vec<_>, _>>()
+        })
+        .collect::<Result<Vec<_>, _>>()
         .map_err(|_| Error::new_str("Failed to parse line"))?;
 
     let max_width = 4 * (infos.iter().max_by_key(|i| i.x).unwrap().x + 1);
@@ -124,7 +125,8 @@ fn level_1(lines: Vec<String>) -> ACResult<usize> {
 
 fn manhatten(x1: isize, y1: isize, x2: isize, y2: isize) -> usize {
     let res = ((if x1 > x2 { x1 - x2 } else { x2 - x1 })
-        + (if y1 > y2 { y1 - y2 } else { y2 - y1 })).abs() as usize;
+        + (if y1 > y2 { y1 - y2 } else { y2 - y1 }))
+    .abs() as usize;
     res
 }
 
@@ -142,7 +144,8 @@ fn get_nearest(
                 p,
                 manhatten(x, y, (p.x + x_offset) as isize, (p.y + y_offset) as isize),
             )
-        }).collect();
+        })
+        .collect();
     points.sort_unstable_by_key(|&(_, size)| size);
     if points[0].1 == points[1].1 {
         return None;
@@ -159,7 +162,8 @@ fn level_2(lines: Vec<String>) -> ACResult<usize> {
             let x = s[0].parse().unwrap();
             let y = s[1].parse().unwrap();
             Ok(Point { i: i + 1, x, y })
-        }).collect::<Result<Vec<_>, _>>()
+        })
+        .collect::<Result<Vec<_>, _>>()
         .map_err(|_| Error::new_str("Failed to parse line"))?;
 
     let max_width = 4 * (infos.iter().max_by_key(|i| i.x).unwrap().x + 1);
@@ -177,7 +181,8 @@ fn level_2(lines: Vec<String>) -> ACResult<usize> {
                         (p.x + max_width / 2) as isize,
                         (p.y + max_height / 2) as isize,
                     )
-                }).sum();
+                })
+                .sum();
             field.set(x, y, sum);
             if sum < 10000 {
                 count += 1;

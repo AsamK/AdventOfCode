@@ -6,7 +6,8 @@ pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {
         1 => level_1(&crate::utils::read_lines(data)?[0]),
         // 2 => level_2(crate::utils::read_lines(data)?),
         _ => Err(Error::new(format!("Level {} not implemented", level))),
-    }.map(|r| r.to_string())
+    }
+    .map(|r| r.to_string())
 }
 
 fn level_1(line: &str) -> ACResult<u32> {

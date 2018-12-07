@@ -26,7 +26,8 @@ fn level_2(lines: Vec<String>) -> ACResult<usize> {
                 .filter(|c| c.to_lowercase().to_string() != l.to_lowercase().to_string())
                 .collect::<String>();
             get_reacted_len(&l)
-        }).min()
+        })
+        .min()
         .unwrap();
     Ok(min)
 }
