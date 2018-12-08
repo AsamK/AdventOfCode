@@ -1,6 +1,6 @@
+use crate::errors::{ACResult, Error};
 use chrono::Datelike;
 use clap::{App, Arg};
-use errors::{ACResult, Error};
 use std::io::Read;
 
 mod advent2017;
@@ -16,12 +16,6 @@ extern crate nom;
 
 #[macro_use]
 extern crate serde_derive;
-
-extern crate toml;
-
-extern crate chrono;
-
-extern crate xdg;
 
 fn main() -> ACResult<()> {
     let matches = App::new("Advent solver")

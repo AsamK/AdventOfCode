@@ -1,4 +1,4 @@
-use errors::{ACResult, Error};
+use crate::errors::{ACResult, Error};
 use std::io::BufRead;
 
 pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {

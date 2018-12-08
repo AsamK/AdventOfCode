@@ -1,7 +1,7 @@
 mod parser;
 
 use self::parser::{TuringBlueprint, TuringDirection, TuringState};
-use errors::{ACResult, Error};
+use crate::errors::{ACResult, Error};
 use std::io::Read;
 
 pub fn get_result<T: Read>(data: T, level: u8) -> ACResult<String> {

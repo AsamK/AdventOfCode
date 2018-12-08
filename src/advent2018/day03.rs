@@ -1,4 +1,4 @@
-use errors::{ACResult, Error};
+use crate::errors::{ACResult, Error};
 use std::io::BufRead;
 
 pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {
@@ -17,9 +17,9 @@ struct FabricPieceInfo {
     height: usize,
 }
 
-named!(number<nom::types::CompleteStr, usize>, flat_map!(complete!(take_while!(|c: char| {c.is_digit(10)})), parse_to!(usize)));
+named!(number<nom::types::CompleteStr<'_>, usize>, flat_map!(complete!(take_while!(|c: char| {c.is_digit(10)})), parse_to!(usize)));
 
-named!(info_line<nom::types::CompleteStr, FabricPieceInfo>,
+named!(info_line<nom::types::CompleteStr<'_>, FabricPieceInfo>,
   dbg!(do_parse!(
       tag!("#") >>
     i: dbg!(number) >>

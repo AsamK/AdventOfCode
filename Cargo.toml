@@ -2,6 +2,7 @@
 name = "advent_of_code_solver"
 version = "0.1.0"
 authors = ["AsamK"]
+edition = "2018"
 
 [dependencies]
 clap = "2"

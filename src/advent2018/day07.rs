@@ -1,4 +1,4 @@
-use errors::{ACResult, Error};
+use crate::errors::{ACResult, Error};
 use std::collections::HashMap;
 use std::io::BufRead;
 
@@ -35,23 +35,19 @@ fn level_1(lines: Vec<String>) -> ACResult<String> {
         .map_err(|_| Error::new_str("Failed to parse line"))?;
     let mut name_to_dependencies_map = HashMap::new();
     for l in infos {
-        {
-            let entry = name_to_dependencies_map.entry(l.name).or_insert(Vec::new());
-            entry.push(l.dep);
-        }
+        let entry = name_to_dependencies_map.entry(l.name).or_insert(Vec::new());
+        entry.push(l.dep);
         name_to_dependencies_map.entry(l.dep).or_insert(Vec::new());
     }
     let mut order = "".to_string();
     loop {
         let mut available = Vec::new();
-        {
-            if name_to_dependencies_map.len() == 0 {
-                break;
-            }
-            for (name, deps) in &name_to_dependencies_map {
-                if deps.len() == 0 {
-                    available.push(name.clone());
-                }
+        if name_to_dependencies_map.len() == 0 {
+            break;
+        }
+        for (name, deps) in &name_to_dependencies_map {
+            if deps.len() == 0 {
+                available.push(name.clone());
             }
         }
         available.sort();
@@ -59,22 +55,18 @@ fn level_1(lines: Vec<String>) -> ACResult<String> {
             panic!("invalid input")
         }
         let element = available[0];
-        {
-            for (_, deps) in &mut name_to_dependencies_map {
-                let mut index = None;
-                {
-                    for (i, x) in deps.iter().enumerate() {
-                        if *x == element {
-                            index = Some(i);
-                            break;
-                        }
-                    }
+        for (_, deps) in &mut name_to_dependencies_map {
+            let mut index = None;
+            for (i, x) in deps.iter().enumerate() {
+                if *x == element {
+                    index = Some(i);
+                    break;
                 }
-                if index == None {
-                    continue;
-                }
-                deps.remove(index.unwrap());
             }
+            if index == None {
+                continue;
+            }
+            deps.remove(index.unwrap());
         }
         name_to_dependencies_map.remove(&element);
         order += &element.to_string();
@@ -96,10 +88,8 @@ fn level_2(lines: Vec<String>) -> ACResult<u32> {
         .map_err(|_| Error::new_str("Failed to parse guard line"))?;
     let mut deps = HashMap::new();
     for l in infos {
-        {
-            let entry = deps.entry(l.name).or_insert(Vec::new());
-            entry.push(l.dep);
-        }
+        let entry = deps.entry(l.name).or_insert(Vec::new());
+        entry.push(l.dep);
         deps.entry(l.dep).or_insert(Vec::new());
     }
     let mut workers = Vec::new();
@@ -114,42 +104,34 @@ fn level_2(lines: Vec<String>) -> ACResult<u32> {
         // println!("{:?}", deps);
         // println!("{:?}", workers);
         let mut available = Vec::new();
-        {
-            if deps.len() == 0 {
-                break;
-            }
+        if deps.len() == 0 {
+            break;
         }
 
-        {
-            for w in workers.iter_mut() {
-                if w.work == None {
-                    continue;
-                }
-                if w.finished_second == second {
-                    for (_, deps) in &mut deps {
-                        let mut index = 99999999;
-                        {
-                            for (i, x) in deps.iter().enumerate() {
-                                if *x == w.work.unwrap() {
-                                    index = i;
-                                    break;
-                                }
-                            }
+        for w in workers.iter_mut() {
+            if w.work == None {
+                continue;
+            }
+            if w.finished_second == second {
+                for (_, deps) in &mut deps {
+                    let mut index = 99999999;
+                    for (i, x) in deps.iter().enumerate() {
+                        if *x == w.work.unwrap() {
+                            index = i;
+                            break;
                         }
-                        if index == 99999999 {
-                            continue;
-                        }
-                        deps.remove(index);
                     }
-                    w.work = None;
+                    if index == 99999999 {
+                        continue;
+                    }
+                    deps.remove(index);
                 }
+                w.work = None;
             }
         }
-        {
-            for (name, deps) in &deps {
-                if deps.len() == 0 {
-                    available.push(name.clone());
-                }
+        for (name, deps) in &deps {
+            if deps.len() == 0 {
+                available.push(name.clone());
             }
         }
         available.sort();
@@ -167,9 +149,7 @@ fn level_2(lines: Vec<String>) -> ACResult<u32> {
                 deps.remove(&element);
                 w.work = Some(*element);
                 let mut b: [u8; 1] = [0; 1];
-                {
-                    element.encode_utf8(&mut b);
-                }
+                element.encode_utf8(&mut b);
                 w.finished_second = second + 60 + b[0] as u32 - b'A' as u32 + 1;
             }
         }
