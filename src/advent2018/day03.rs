@@ -17,22 +17,35 @@ struct FabricPieceInfo {
     height: usize,
 }
 
-named!(number<nom::types::CompleteStr<'_>, usize>, flat_map!(complete!(take_while!(|c: char| {c.is_digit(10)})), parse_to!(usize)));
+named!(
+    number<nom::types::CompleteStr<'_>, usize>,
+    flat_map!(
+        complete!(take_while!(|c: char| c.is_digit(10))),
+        parse_to!(usize)
+    )
+);
 
-named!(info_line<nom::types::CompleteStr<'_>, FabricPieceInfo>,
-  dbg!(do_parse!(
-      tag!("#") >>
-    i: dbg!(number) >>
-      tag!(" @ ") >>
-    left: number >>
-      tag!(",") >>
-    top: number >>
-      tag!(": ") >>
-    width: number >>
-      tag!("x") >>
-    height: number >>
-    (FabricPieceInfo {i, left, top, width, height})
-  ))
+named!(
+    info_line<nom::types::CompleteStr<'_>, FabricPieceInfo>,
+    dbg!(do_parse!(
+        tag!("#")
+            >> i: dbg!(number)
+            >> tag!(" @ ")
+            >> left: number
+            >> tag!(",")
+            >> top: number
+            >> tag!(": ")
+            >> width: number
+            >> tag!("x")
+            >> height: number
+            >> (FabricPieceInfo {
+                i,
+                left,
+                top,
+                width,
+                height
+            })
+    ))
 );
 
 struct FabricPiece {
