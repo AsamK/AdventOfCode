@@ -93,7 +93,6 @@ fn main() -> ACResult<()> {
         logo_file
             .read_to_string(&mut config_string)
             .map_err(|_| Error::new_str("Failed to load config file."))?;
-        println!("{}", &config_string);
         Some(
             toml::from_str(&config_string)
                 .map_err(|_| Error::new_str("Failed to load config file."))?,
@@ -130,7 +129,9 @@ fn main() -> ACResult<()> {
             }
 
             if let Ok(input_file_path) = xdg_dirs.place_data_file(&input_file_name) {
-                println!("{:?}", &input_file_path);
+                if verbose {
+                    eprintln!("Storing input file to: {:?}", &input_file_path);
+                }
                 {
                     let mut input_file = std::fs::File::create(&input_file_path)
                         .map_err(|_| Error::new_str("Failed to store downloaded input file."))?;
