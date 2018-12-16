@@ -30,7 +30,6 @@ fn level_1(line: &str) -> ACResult<u32> {
     }
 
     Ok(sum)
-
 }
 
 fn level_2(line: &str) -> ACResult<u32> {
