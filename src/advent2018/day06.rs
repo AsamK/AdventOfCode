@@ -124,10 +124,8 @@ fn level_1(lines: Vec<String>) -> ACResult<usize> {
 }
 
 fn manhatten(x1: isize, y1: isize, x2: isize, y2: isize) -> usize {
-    let res = ((if x1 > x2 { x1 - x2 } else { x2 - x1 })
-        + (if y1 > y2 { y1 - y2 } else { y2 - y1 }))
-    .abs() as usize;
-    res
+    ((if x1 > x2 { x1 - x2 } else { x2 - x1 }) + (if y1 > y2 { y1 - y2 } else { y2 - y1 })).abs()
+        as usize
 }
 
 fn get_nearest(

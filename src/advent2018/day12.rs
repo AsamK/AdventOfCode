@@ -93,7 +93,7 @@ impl Tunnel {
                         return false;
                     }
                 }
-                return true;
+                true
             });
             if inst.is_none() {
                 self.set(i, false);

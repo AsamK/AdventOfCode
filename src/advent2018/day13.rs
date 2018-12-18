@@ -219,18 +219,16 @@ impl Game {
                             CartDirection::Left => '<',
                             CartDirection::Right => '>',
                         }
-                    } else {
-                        if let Some(track) = self.tracks[y][x].as_ref() {
-                            match track {
-                                TrackType::Horizontal => '-',
-                                TrackType::Vertical => '|',
-                                TrackType::TopLeftBottomRight => '\\',
-                                TrackType::TopRightBottomLeft => '/',
-                                TrackType::Intersection => '+',
-                            }
-                        } else {
-                            ' '
+                    } else if let Some(track) = self.tracks[y][x].as_ref() {
+                        match track {
+                            TrackType::Horizontal => '-',
+                            TrackType::Vertical => '|',
+                            TrackType::TopLeftBottomRight => '\\',
+                            TrackType::TopRightBottomLeft => '/',
+                            TrackType::Intersection => '+',
                         }
+                    } else {
+                        ' '
                     }
                 })
                 .collect();

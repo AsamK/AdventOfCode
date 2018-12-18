@@ -114,17 +114,16 @@ fn level_2(lines: Vec<String>) -> ACResult<u32> {
             }
             if w.finished_second == second {
                 for (_, deps) in &mut deps {
-                    let mut index = 99999999;
+                    let mut index = None;
                     for (i, x) in deps.iter().enumerate() {
                         if *x == w.work.unwrap() {
-                            index = i;
+                            index = Some(i);
                             break;
                         }
                     }
-                    if index == 99999999 {
-                        continue;
+                    if let Some(i) = index {
+                        deps.remove(i);
                     }
-                    deps.remove(index);
                 }
                 w.work = None;
             }

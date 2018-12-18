@@ -212,7 +212,7 @@ impl Game {
 
     fn get_victim(&self, point: &Point) -> Option<Point> {
         let in_range = self.get_adjacent(point);
-        let min_point = in_range
+        in_range
             .iter()
             .filter(|f| match self.get_point(f) {
                 FieldType::Elf(_) => {
@@ -236,8 +236,7 @@ impl Game {
                 FieldType::Goblin(p) => p.hit_points,
                 _ => panic!("Unreachable"),
             })
-            .map(|p| p.clone());
-        min_point
+            .map(|p| p.clone())
     }
 
     fn attack(&mut self, victim_point: &Point) {
@@ -504,7 +503,7 @@ impl Game {
             }
         }
 
-        return count;
+        count
     }
 
     #[allow(dead_code)]
@@ -562,7 +561,7 @@ impl Game {
                 _ => {}
             }
         }
-        return false;
+        false
     }
 }
 

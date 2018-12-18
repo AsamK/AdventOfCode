@@ -151,7 +151,7 @@ impl Field {
     }
 }
 
-fn level_1(line: &Vec<String>) -> ACResult<usize> {
+fn level_1(line: &[String]) -> ACResult<usize> {
     let mut field = Field::new(line);
     let mut field2 = Field::empty(field.width, field.height);
 
@@ -164,16 +164,14 @@ fn level_1(line: &Vec<String>) -> ACResult<usize> {
                 *n.get_mut(x, y) = c.get_next(x, y);
             }
         }
-        // Switch fields
-        let x = c;
-        c = n;
-        n = x;
+
+        std::mem::swap(&mut c, &mut n)
     }
     // c.print();
     Ok(c.count_resources())
 }
 
-fn level_2(line: &Vec<String>) -> ACResult<usize> {
+fn level_2(line: &[String]) -> ACResult<usize> {
     let mut field = Field::new(line);
     let mut field2 = Field::empty(field.width, field.height);
 

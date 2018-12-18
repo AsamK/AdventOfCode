@@ -80,7 +80,7 @@ fn level_2(lines: Vec<String>) -> ACResult<String> {
     }
     let grid = grid;
 
-    let mut max = -3000000;
+    let mut max = i32::min_value();
     let mut result = "".to_owned();
 
     for s in 1..=300 {

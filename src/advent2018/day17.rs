@@ -185,7 +185,7 @@ impl Field {
             }
             if let Some(left_x) = left_wall_x {
                 if let Some(right_x) = right_wall_x {
-                    for x in (left_x + 1)..=(right_x - 1) {
+                    for x in (left_x + 1)..right_x {
                         *self.get_mut(x, pos.y) = Type::WaterStill;
                     }
                     continue;
@@ -254,7 +254,7 @@ named!(parse_line<&str, Scan>,
     )
 );
 
-fn level_1(lines: &Vec<String>) -> ACResult<usize> {
+fn level_1(lines: &[String]) -> ACResult<usize> {
     let scans: Vec<Scan> = lines
         .iter()
         .map(|l| parse_line(&(l.to_string() + "\n")).unwrap().1)
@@ -266,7 +266,7 @@ fn level_1(lines: &Vec<String>) -> ACResult<usize> {
     Ok(field.count_any_water())
 }
 
-fn level_2(lines: &Vec<String>) -> ACResult<usize> {
+fn level_2(lines: &[String]) -> ACResult<usize> {
     let scans: Vec<Scan> = lines
         .iter()
         .map(|l| parse_line(&(l.to_string() + "\n")).unwrap().1)
