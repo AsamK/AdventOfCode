@@ -1,6 +1,9 @@
+use self::interpreter_utils::{Instruction, Opcode, Registers, ALL_OPCODES};
 use crate::errors::{ACResult, Error};
 use std::io::BufRead;
 use std::io::Read;
+
+pub mod interpreter_utils;
 
 pub fn get_result<T: Read + BufRead>(data: T, level: u8) -> ACResult<String> {
     match level {
@@ -22,180 +25,23 @@ fn parse_line<T: Read>(mut data: T) -> ACResult<Input> {
 
 const REGISTER_COUNT: usize = 4;
 
-#[derive(Debug, PartialEq, Eq, Clone)]
-struct Registers {
-    data: [usize; REGISTER_COUNT],
-}
-
-impl Registers {
-    fn new(registers: &[u8]) -> Self {
-        if registers.len() != REGISTER_COUNT {
-            panic!("Needs to be four elements long");
-        }
-        Registers {
-            data: [
-                registers[0] as usize,
-                registers[1] as usize,
-                registers[2] as usize,
-                registers[3] as usize,
-            ],
-        }
-    }
-
-    fn empty() -> Self {
-        Registers { data: [0, 0, 0, 0] }
-    }
-
-    fn get(&self, i: u8) -> &usize {
-        &self.data[i as usize]
-    }
-
-    fn get_mut(&mut self, i: u8) -> &mut usize {
-        &mut self.data[i as usize]
-    }
-}
-
-fn execute_instruction(i: &Instruction, reg: &mut Registers) {
-    match i.opcode {
-        Opcode::Addr => {
-            *reg.get_mut(i.output_register) = reg.get(i.input_a) + reg.get(i.input_b);
-        }
-        Opcode::Addi => {
-            *reg.get_mut(i.output_register) = reg.get(i.input_a) + i.input_b as usize;
-        }
-        Opcode::Mulr => {
-            *reg.get_mut(i.output_register) = reg.get(i.input_a) * reg.get(i.input_b);
-        }
-        Opcode::Muli => {
-            *reg.get_mut(i.output_register) = reg.get(i.input_a) * i.input_b as usize;
-        }
-        Opcode::Banr => {
-            *reg.get_mut(i.output_register) = reg.get(i.input_a) & reg.get(i.input_b);
-        }
-        Opcode::Bani => {
-            *reg.get_mut(i.output_register) = reg.get(i.input_a) & i.input_b as usize;
-        }
-        Opcode::Borr => {
-            *reg.get_mut(i.output_register) = reg.get(i.input_a) | reg.get(i.input_b);
-        }
-        Opcode::Bori => {
-            *reg.get_mut(i.output_register) = reg.get(i.input_a) | i.input_b as usize;
-        }
-        Opcode::Setr => {
-            *reg.get_mut(i.output_register) = *reg.get(i.input_a);
-        }
-        Opcode::Seti => {
-            *reg.get_mut(i.output_register) = i.input_a as usize;
-        }
-        Opcode::Gtir => {
-            *reg.get_mut(i.output_register) = if i.input_a as usize > *reg.get(i.input_b) {
-                1
-            } else {
-                0
-            };
-        }
-        Opcode::Gtri => {
-            *reg.get_mut(i.output_register) = if *reg.get(i.input_a) > i.input_b as usize {
-                1
-            } else {
-                0
-            };
-        }
-        Opcode::Gtrr => {
-            *reg.get_mut(i.output_register) = if *reg.get(i.input_a) > *reg.get(i.input_b) {
-                1
-            } else {
-                0
-            };
-        }
-        Opcode::Eqir => {
-            *reg.get_mut(i.output_register) = if i.input_a as usize == *reg.get(i.input_b) {
-                1
-            } else {
-                0
-            };
-        }
-        Opcode::Eqri => {
-            *reg.get_mut(i.output_register) = if *reg.get(i.input_a) == i.input_b as usize {
-                1
-            } else {
-                0
-            };
-        }
-        Opcode::Eqrr => {
-            *reg.get_mut(i.output_register) = if *reg.get(i.input_a) == *reg.get(i.input_b) {
-                1
-            } else {
-                0
-            };
-        }
-    }
-}
-
-#[derive(PartialEq, Debug, Clone)]
-enum Opcode {
-    Addr,
-    Addi,
-    Mulr,
-    Muli,
-    Banr,
-    Bani,
-    Borr,
-    Bori,
-    Setr,
-    Seti,
-    Gtir,
-    Gtri,
-    Gtrr,
-    Eqir,
-    Eqri,
-    Eqrr,
-}
-
-const ALL_OPCODES: [Opcode; 16] = [
-    Opcode::Addr,
-    Opcode::Addi,
-    Opcode::Mulr,
-    Opcode::Muli,
-    Opcode::Banr,
-    Opcode::Bani,
-    Opcode::Borr,
-    Opcode::Bori,
-    Opcode::Setr,
-    Opcode::Seti,
-    Opcode::Gtir,
-    Opcode::Gtri,
-    Opcode::Gtrr,
-    Opcode::Eqir,
-    Opcode::Eqri,
-    Opcode::Eqrr,
-];
-
-#[derive(Debug)]
-struct Instruction {
-    opcode: Opcode,
-    input_a: u8,
-    input_b: u8,
-    output_register: u8,
-}
-
-impl Instruction {
-    fn from_any_instruction(opcode: &Opcode, instruction: &AnyInstruction) -> Self {
-        Instruction {
-            opcode: opcode.clone(),
-            input_a: instruction.input_a,
-            input_b: instruction.input_b,
-            output_register: instruction.output_register,
-        }
-    }
-}
-
 #[derive(Debug)]
 struct AnyInstruction {
     opcode: u8,
     input_a: u8,
     input_b: u8,
     output_register: u8,
+}
+
+impl AnyInstruction {
+    fn to_instruction(&self, opcode: &Opcode) -> Instruction {
+        Instruction::new(
+            opcode.clone(),
+            self.input_a,
+            self.input_b,
+            self.output_register,
+        )
+    }
 }
 
 #[derive(Debug)]
@@ -215,9 +61,13 @@ named!(parse_number<&str, u8>,
     complete!(map!(take_while1!(|c: char| c.is_numeric()), |c| c.to_string().parse().unwrap()))
 );
 
-named!(parse_register_or_value<&str, u8>,
+named!(parse_number_u64<&str, u64>,
+    complete!(map!(take_while1!(|c: char| c.is_numeric()), |c| c.to_string().parse().unwrap()))
+);
+
+named!(parse_register_or_value<&str, u64>,
     do_parse!(
-        n: parse_number >>
+        n: parse_number_u64 >>
         opt!(tag!(", ")) >>
         (n)
     )
@@ -273,12 +123,12 @@ named!(
 );
 
 named!(parse_input<&str, Input>,
-do_parse!(
-    samples: many1!(parse_sample) >>
-    tag!("\n\n") >>
-    instructions: many1!(complete!(terminated!(parse_instruction, tag!("\n")))) >>
-    (Input { samples, instructions })
-)
+    do_parse!(
+        samples: many1!(parse_sample) >>
+        tag!("\n\n") >>
+        instructions: many1!(complete!(terminated!(parse_instruction, tag!("\n")))) >>
+        (Input { samples, instructions })
+    )
 );
 
 fn get_matching_opcodes(sample: &Sample) -> Vec<Opcode> {
@@ -286,10 +136,10 @@ fn get_matching_opcodes(sample: &Sample) -> Vec<Opcode> {
         .iter()
         .filter(|opcode| {
             let mut result_registers = sample.register_before.clone();
-            execute_instruction(
-                &Instruction::from_any_instruction(opcode, &sample.instruction),
-                &mut result_registers,
-            );
+            sample
+                .instruction
+                .to_instruction(opcode)
+                .execute_instruction(&mut result_registers);
             result_registers == sample.register_after
         })
         .map(|opcode| opcode.clone())
@@ -347,16 +197,15 @@ fn level_1(input: &Input) -> ACResult<usize> {
     Ok(result)
 }
 
-fn level_2(input: &Input) -> ACResult<usize> {
+fn level_2(input: &Input) -> ACResult<u64> {
     let mapping = get_mapping_from_samples(&input.samples);
 
-    let mut registers = Registers::empty();
+    let mut registers = Registers::empty(REGISTER_COUNT);
 
     for instr in input.instructions.iter() {
-        execute_instruction(
-            &Instruction::from_any_instruction(&mapping[instr.opcode as usize], &instr),
-            &mut registers,
-        );
+        instr
+            .to_instruction(&mapping[instr.opcode as usize])
+            .execute_instruction(&mut registers);
     }
 
     Ok(*registers.get(0))
