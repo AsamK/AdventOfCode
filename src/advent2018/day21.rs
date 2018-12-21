@@ -1,5 +1,6 @@
 use crate::advent2018::day16::interpreter_utils::{Instruction, Opcode, Registers};
 use crate::errors::{ACResult, Error};
+use std::collections::HashSet;
 use std::io::BufRead;
 use std::io::Read;
 
@@ -98,20 +99,22 @@ fn level_1(input: &Input) -> ACResult<u64> {
         if ip >= input.instructions.len() {
             break;
         }
+        if ip == 28 {
+            // Assume that the program checks if the current value in register 1 is equal to
+            // register 0. If so it halts
+            return Ok(*registers.get(1));
+        }
     }
 
-    Ok(*registers.get(0))
+    Err(Error::new_str("No halt condition found"))
 }
 
 fn level_2(input: &Input) -> ACResult<u64> {
-    // for (i, instr) in input.instructions.iter().enumerate() {
-    //     println!("{}: {}", i, instr.to_string());
-    // }
-
     let mut registers = Registers::empty(REGISTER_COUNT);
-    *registers.get_mut(0) = 1;
 
     let mut ip: usize = 0;
+    let mut prev = HashSet::new();
+    let mut prevs = Vec::new();
     loop {
         *registers.get_mut(input.ip_register) = ip as u64;
 
@@ -120,23 +123,22 @@ fn level_2(input: &Input) -> ACResult<u64> {
         ip = *registers.get(input.ip_register) as usize;
 
         ip += 1;
+        if ip == 28 {
+            // Assume that the program checks if the current value in register 1 is equal to
+            // register 0. If so it halts.
+            // We need the value that executes the most instructions.
+            // So we take the last value, before they start repeating themselves
+            let val = *registers.get(1);
+            if prev.contains(&val) {
+                return Ok(*prevs.last().unwrap());
+            }
+            prev.insert(val);
+            prevs.push(val);
+        }
         if ip >= input.instructions.len() {
             break;
         }
-
-        if ip == 1 {
-            // Shortcut for the program, assuming it wants to comput the
-            // sum of all divisors of the value in r5 when it reaches instruction #1
-            let mut count = 0;
-            let num = *registers.get(5);
-            for r1 in 1..=num {
-                if (num % r1) == 0 {
-                    count += r1;
-                }
-            }
-            return Ok(count);
-        }
     }
 
-    Ok(*registers.get(0))
+    Err(Error::new_str("No halt condition found"))
 }

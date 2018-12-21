@@ -353,14 +353,12 @@ impl Game {
                     if shortest > path.len() {
                         let shortest = shortest_path_len.load(std::sync::atomic::Ordering::Relaxed);
                         if shortest > path.len() {
-                            shortest_path_len
-                                .compare_exchange(
-                                    shortest,
-                                    path.len(),
-                                    std::sync::atomic::Ordering::Relaxed,
-                                    std::sync::atomic::Ordering::Relaxed,
-                                )
-                                .unwrap();
+                            let _ignore = shortest_path_len.compare_exchange(
+                                shortest,
+                                path.len(),
+                                std::sync::atomic::Ordering::Relaxed,
+                                std::sync::atomic::Ordering::Relaxed,
+                            );
                         }
                     }
                     paths.push(path);

@@ -67,13 +67,13 @@ pub const ALL_OPCODES: [Opcode; 16] = [
 #[derive(Debug)]
 pub struct Instruction {
     opcode: Opcode,
-    input_a: u8,
-    input_b: u8,
+    input_a: u64,
+    input_b: u64,
     output_register: u8,
 }
 
 impl Instruction {
-    pub fn new(opcode: Opcode, input_a: u8, input_b: u8, output_register: u8) -> Self {
+    pub fn new(opcode: Opcode, input_a: u64, input_b: u64, output_register: u8) -> Self {
         Self {
             opcode,
             input_a,
@@ -85,54 +85,62 @@ impl Instruction {
     pub fn execute_instruction(&self, reg: &mut Registers) {
         match self.opcode {
             Opcode::Addr => {
-                *reg.get_mut(self.output_register) = reg.get(self.input_a) + reg.get(self.input_b);
+                *reg.get_mut(self.output_register) =
+                    reg.get(self.input_a as u8) + reg.get(self.input_b as u8);
             }
             Opcode::Addi => {
-                *reg.get_mut(self.output_register) = reg.get(self.input_a) + self.input_b as u64;
+                *reg.get_mut(self.output_register) =
+                    reg.get(self.input_a as u8) + self.input_b as u64;
             }
             Opcode::Mulr => {
-                *reg.get_mut(self.output_register) = reg.get(self.input_a) * reg.get(self.input_b);
+                *reg.get_mut(self.output_register) =
+                    reg.get(self.input_a as u8) * reg.get(self.input_b as u8);
             }
             Opcode::Muli => {
-                *reg.get_mut(self.output_register) = reg.get(self.input_a) * self.input_b as u64;
+                *reg.get_mut(self.output_register) =
+                    reg.get(self.input_a as u8) * self.input_b as u64;
             }
             Opcode::Banr => {
-                *reg.get_mut(self.output_register) = reg.get(self.input_a) & reg.get(self.input_b);
+                *reg.get_mut(self.output_register) =
+                    reg.get(self.input_a as u8) & reg.get(self.input_b as u8);
             }
             Opcode::Bani => {
-                *reg.get_mut(self.output_register) = reg.get(self.input_a) & self.input_b as u64;
+                *reg.get_mut(self.output_register) =
+                    reg.get(self.input_a as u8) & self.input_b as u64;
             }
             Opcode::Borr => {
-                *reg.get_mut(self.output_register) = reg.get(self.input_a) | reg.get(self.input_b);
+                *reg.get_mut(self.output_register) =
+                    reg.get(self.input_a as u8) | reg.get(self.input_b as u8);
             }
             Opcode::Bori => {
-                *reg.get_mut(self.output_register) = reg.get(self.input_a) | self.input_b as u64;
+                *reg.get_mut(self.output_register) =
+                    reg.get(self.input_a as u8) | self.input_b as u64;
             }
             Opcode::Setr => {
-                *reg.get_mut(self.output_register) = *reg.get(self.input_a);
+                *reg.get_mut(self.output_register) = *reg.get(self.input_a as u8);
             }
             Opcode::Seti => {
                 *reg.get_mut(self.output_register) = self.input_a as u64;
             }
             Opcode::Gtir => {
-                *reg.get_mut(self.output_register) = if self.input_a as u64 > *reg.get(self.input_b)
-                {
-                    1
-                } else {
-                    0
-                };
+                *reg.get_mut(self.output_register) =
+                    if self.input_a as u64 > *reg.get(self.input_b as u8) {
+                        1
+                    } else {
+                        0
+                    };
             }
             Opcode::Gtri => {
-                *reg.get_mut(self.output_register) = if *reg.get(self.input_a) > self.input_b as u64
-                {
-                    1
-                } else {
-                    0
-                };
+                *reg.get_mut(self.output_register) =
+                    if *reg.get(self.input_a as u8) > self.input_b as u64 {
+                        1
+                    } else {
+                        0
+                    };
             }
             Opcode::Gtrr => {
                 *reg.get_mut(self.output_register) =
-                    if *reg.get(self.input_a) > *reg.get(self.input_b) {
+                    if *reg.get(self.input_a as u8) > *reg.get(self.input_b as u8) {
                         1
                     } else {
                         0
@@ -140,7 +148,7 @@ impl Instruction {
             }
             Opcode::Eqir => {
                 *reg.get_mut(self.output_register) =
-                    if self.input_a as u64 == *reg.get(self.input_b) {
+                    if self.input_a as u64 == *reg.get(self.input_b as u8) {
                         1
                     } else {
                         0
@@ -148,7 +156,7 @@ impl Instruction {
             }
             Opcode::Eqri => {
                 *reg.get_mut(self.output_register) =
-                    if *reg.get(self.input_a) == self.input_b as u64 {
+                    if *reg.get(self.input_a as u8) == self.input_b as u64 {
                         1
                     } else {
                         0
@@ -156,7 +164,7 @@ impl Instruction {
             }
             Opcode::Eqrr => {
                 *reg.get_mut(self.output_register) =
-                    if *reg.get(self.input_a) == *reg.get(self.input_b) {
+                    if *reg.get(self.input_a as u8) == *reg.get(self.input_b as u8) {
                         1
                     } else {
                         0

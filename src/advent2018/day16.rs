@@ -28,8 +28,8 @@ const REGISTER_COUNT: usize = 4;
 #[derive(Debug)]
 struct AnyInstruction {
     opcode: u8,
-    input_a: u8,
-    input_b: u8,
+    input_a: u64,
+    input_b: u64,
     output_register: u8,
 }
 
@@ -88,9 +88,9 @@ named!(
     do_parse!(
         opcode: parse_number >>
         tag!(" ") >>
-        input_a: parse_number >>
+        input_a: parse_number_u64 >>
         tag!(" ") >>
-        input_b: parse_number >>
+        input_b: parse_number_u64 >>
         tag!(" ") >>
         output_register: parse_number >>
         (AnyInstruction {
