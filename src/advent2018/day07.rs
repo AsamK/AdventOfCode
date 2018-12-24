@@ -1,4 +1,5 @@
 use crate::errors::{ACResult, Error};
+use nom::{do_parse, named, tag, take};
 use std::collections::HashMap;
 use std::io::BufRead;
 
@@ -16,14 +17,14 @@ struct Info {
 }
 
 named!(info_line<&str, Info>,
-  dbg!(do_parse!(
+  do_parse!(
     tag!("Step ") >>
     dep: take!(1)  >>
     tag!(" must be finished before step ") >>
     name: take!(1) >>
     tag!(" can begin.") >>
     (Info {dep: dep.chars().next().unwrap(), name:name.chars().next().unwrap()})
-  ))
+  )
 );
 
 // Step F must be finished before step E can begin.

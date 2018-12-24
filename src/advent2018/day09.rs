@@ -1,4 +1,5 @@
 use crate::errors::{ACResult, Error};
+use nom::{call, complete, do_parse, error_position, flat_map, named, parse_to, tag, take_while};
 use std::io::BufRead;
 
 pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {
@@ -17,13 +18,13 @@ struct Info {
 named!(number<&str, u32>, flat_map!(complete!(take_while!(|c: char| {c.is_digit(10)})), parse_to!(u32)));
 
 named!(info_line<&str, Info>,
-  dbg!(do_parse!(
+  do_parse!(
     player_count: number >>
     tag!(" players; last marble is worth ") >>
     last_marble_worth: number >>
     tag!(" points") >>
     (Info { player_count, last_marble_worth })
-  ))
+  )
 );
 
 fn level_1(lines: Vec<String>) -> ACResult<u32> {

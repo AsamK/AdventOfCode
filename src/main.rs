@@ -1,21 +1,14 @@
 use crate::errors::{ACResult, Error};
 use chrono::Datelike;
+use clap::value_t;
 use clap::{App, Arg};
+use serde::Deserialize;
 use std::io::Read;
 
 mod advent2017;
 mod advent2018;
 mod errors;
 mod utils;
-
-#[macro_use]
-extern crate clap;
-
-#[macro_use]
-extern crate nom;
-
-#[macro_use]
-extern crate serde_derive;
 
 fn main() -> ACResult<()> {
     let matches = App::new("Advent solver")

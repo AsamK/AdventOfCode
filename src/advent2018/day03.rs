@@ -1,4 +1,5 @@
 use crate::errors::{ACResult, Error};
+use nom::{call, complete, do_parse, error_position, flat_map, named, parse_to, tag, take_while};
 use std::io::BufRead;
 
 pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {
@@ -27,9 +28,9 @@ named!(
 
 named!(
     info_line<nom::types::CompleteStr<'_>, FabricPieceInfo>,
-    dbg!(do_parse!(
+    do_parse!(
         tag!("#")
-            >> i: dbg!(number)
+            >> i: number
             >> tag!(" @ ")
             >> left: number
             >> tag!(",")
@@ -45,7 +46,7 @@ named!(
                 width,
                 height
             })
-    ))
+    )
 );
 
 struct FabricPiece {

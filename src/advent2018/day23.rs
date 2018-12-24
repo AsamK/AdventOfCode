@@ -1,4 +1,5 @@
 use crate::errors::{ACResult, Error};
+use nom::{call, complete, do_parse, error_position, map, named, tag, take_while};
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::io::BufRead;
@@ -55,7 +56,7 @@ named!(
 // pos=<9,-1>, r=432
 named!(
     parse_bot<nom::types::CompleteStr<'_>, Bot>,
-    dbg!(do_parse!(
+    do_parse!(
         tag!("pos=<")
             >> x: number
             >> tag!(",")
@@ -68,7 +69,7 @@ named!(
                 position: Position { x, y, z },
                 range
             })
-    ))
+    )
 );
 
 fn level_1(lines: Vec<String>) -> ACResult<usize> {

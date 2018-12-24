@@ -1,4 +1,5 @@
 use crate::errors::{ACResult, Error};
+use nom::{call, complete, do_parse, error_position, map, named, tag, take_while};
 use std::io::BufRead;
 
 pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {
@@ -34,7 +35,7 @@ named!(number<&str, i64>, map!(
 
 // position=< 9,  1> velocity=< 0,  2>
 named!(info_line<&str, Point>,
-  dbg!(do_parse!(
+  do_parse!(
     tag!("position=<") >>
     x: number >>
     tag!(", ") >>
@@ -45,7 +46,7 @@ named!(info_line<&str, Point>,
     vy: number >>
     tag!(">") >>
     (Point {position: Position{x,y}, velocity: Velocity{x:vx,y:vy}})
-  ))
+  )
 );
 
 fn level_1(lines: Vec<String>) -> ACResult<String> {

@@ -1,4 +1,8 @@
 use crate::errors::{ACResult, Error};
+use nom::{
+    alt, call, complete, delimited, do_parse, error_position, flat_map, map, named, parse_to, tag,
+    take_while, tuple_parser,
+};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::io::BufRead;
@@ -60,7 +64,7 @@ impl Ord for GuardLine {
 named!(number<&str, u32>, flat_map!(complete!(take_while!(|c: char| {c.is_digit(10)})), parse_to!(u32)));
 
 named!(guard_event<&str, GuardEvent>,
-  map!(alt!(tag!("wakes up")| tag!("falls asleep")| delimited!(tag!("Guard #"), dbg!(complete!(take_while!(|c: char| {c.is_digit(10)}))), tag!(" begins shift"))),
+  map!(alt!(tag!("wakes up")| tag!("falls asleep")| delimited!(tag!("Guard #"), complete!(take_while!(|c: char| {c.is_digit(10)})), tag!(" begins shift"))),
     |dir| {match dir {
         "wakes up" => GuardEvent::WakeUp,
         "falls asleep" => GuardEvent::Asleep,
@@ -70,21 +74,21 @@ named!(guard_event<&str, GuardEvent>,
 );
 
 named!(info_line<&str, GuardLine>,
-  dbg!(do_parse!(
+  do_parse!(
     tag!("[") >>
-    year: dbg!(number) >>
+    year: number >>
     tag!("-") >>
-    month: dbg!(number) >>
+    month: number >>
     tag!("-") >>
-    day: dbg!(number) >>
+    day: number >>
     tag!(" ") >>
-    hour: dbg!(number) >>
+    hour: number >>
     tag!(":") >>
-    minute: dbg!(number) >>
+    minute: number >>
     tag!("] ") >>
-    event: dbg!(guard_event) >>
+    event: guard_event >>
     (GuardLine {year, month, day, hour, minute, event})
-  ))
+  )
 );
 
 fn level_1(lines: Vec<String>) -> ACResult<u32> {

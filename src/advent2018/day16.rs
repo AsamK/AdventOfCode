@@ -1,5 +1,9 @@
 use self::interpreter_utils::{Instruction, Opcode, Registers, ALL_OPCODES};
 use crate::errors::{ACResult, Error};
+use nom::{
+    call, complete, do_parse, error_position, many1, many_m_n, map, named, opt, tag, take_while1,
+    terminated, tuple, tuple_parser,
+};
 use std::io::BufRead;
 use std::io::Read;
 
