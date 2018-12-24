@@ -178,7 +178,7 @@ impl<'a> GroupState<'a> {
     }
 }
 
-fn run_game(mut groups: Vec<GroupState>) -> Vec<GroupState> {
+fn run_game(mut groups: Vec<GroupState<'_>>) -> Vec<GroupState<'_>> {
     let initial_size = groups.len();
     loop {
         groups.sort_unstable_by(|a, b| {
