@@ -38,31 +38,160 @@ fn level_2(lines: &[String]) -> ACResult<u32> {
 }
 
 fn run_game(player_count: u32, last_marble_worth: u32) -> u32 {
-    let mut circle = Vec::new();
-    circle.push(0);
+    let mut circle = Circle::new(0);
     let mut player: u32 = 0;
     let mut player_points = vec![0; player_count as usize];
-    let mut current_marble = 0;
     for i in 1..last_marble_worth {
         if i % 23 == 0 {
             // Special case
             player_points[player as usize] += i;
 
-            let to_be_removed = (current_marble + circle.len() - 7) % circle.len();
-            let removed_marble = circle.remove(to_be_removed);
+            circle.navigate_by(-7);
+            let removed_marble = circle.remove();
             player_points[player as usize] += removed_marble;
-            current_marble = to_be_removed % circle.len();
         } else {
             // Normal case
-            let put_right_of = (current_marble + 1) % circle.len();
-            let insert_position = put_right_of + 1;
-            circle.insert(insert_position, i);
-            current_marble = insert_position;
+            circle.navigate_by(1);
+            circle.append(i);
         }
         player = (player + 1) % player_count;
+
+        // circle.print();
     }
-    let mut winners: Vec<_> = player_points.iter().enumerate().collect();
+    let mut winners: Vec<_> = player_points.into_iter().enumerate().collect();
     winners.sort_by_key(|&(_, points)| points);
-    let (_winner, points) = winners[winners.len() - 1];
+    let (_winner, points) = winners.last().unwrap();
     *points
+}
+
+struct Node {
+    value: u32,
+    prev: Option<*mut Node>,
+    next: Option<*mut Node>,
+}
+
+impl Node {
+    fn new(value: u32) -> Self {
+        Node {
+            value,
+            prev: None,
+            next: None,
+        }
+    }
+}
+
+struct Circle {
+    current: Option<*mut Node>,
+}
+
+impl Circle {
+    fn new(value: u32) -> Self {
+        let n = Box::new(Node::new(value));
+        Circle {
+            current: Some(Box::into_raw(n)),
+        }
+    }
+
+    fn navigate_by(&mut self, nodes: i32) {
+        if let Some(current) = self.current {
+            unsafe {
+                if (*current).prev.is_none() {
+                    return;
+                }
+                let mut current = current;
+                for _ in 0..nodes.abs() {
+                    if nodes < 0 {
+                        current = (*current).prev.unwrap();
+                    } else {
+                        current = (*current).next.unwrap();
+                    }
+                }
+                self.current = Some(current);
+            }
+        }
+    }
+
+    fn remove(&mut self) -> u32 {
+        if let Some(current) = self.current {
+            unsafe {
+                let mut current = Box::from_raw(current);
+                if current.prev == current.next {
+                    if let Some(other) = current.prev {
+                        (*other).next = None;
+                        (*other).prev = None;
+                    }
+                } else {
+                    if let Some(prev) = current.prev {
+                        (*prev).next = current.next;
+                    }
+                    if let Some(next) = current.next {
+                        (*next).prev = current.prev;
+                    }
+                }
+                self.current = current.next;
+                current.next = None;
+                current.prev = None;
+                current.value
+            }
+        } else {
+            panic!("Circle has no more nodes");
+        }
+    }
+
+    fn append(&mut self, value: u32) {
+        let node = Box::into_raw(Box::new(Node::new(value)));
+        if let Some(current) = self.current {
+            unsafe {
+                (*node).prev = Some(current);
+                if let Some(next) = (*current).next {
+                    (*node).next = Some(next);
+                    (*next).prev = Some(node);
+                } else {
+                    (*node).next = Some(current);
+                    (*current).prev = Some(node);
+                }
+                (*current).next = Some(node);
+                self.current = (*current).next;
+            }
+        } else {
+            self.current = Some(node);
+        }
+    }
+
+    #[allow(dead_code)]
+    fn print(&self) {
+        let mut result = String::new();
+        let mut cur = self.current;
+        while let Some(c) = cur {
+            result += " ";
+            unsafe {
+                result += &(*c).value.to_string();
+                cur = (*c).next;
+            }
+            if cur.is_none() || cur == self.current {
+                break;
+            }
+        }
+        println!("{}", result);
+    }
+}
+
+impl Drop for Circle {
+    fn drop(&mut self) {
+        if let Some(current) = self.current {
+            let mut cur = self.current;
+            while let Some(c) = cur {
+                unsafe {
+                    cur = (*c).next;
+                    Box::from_raw(c);
+                }
+                if cur.is_none() || cur == self.current {
+                    break;
+                }
+            }
+            unsafe {
+                Box::from_raw(current);
+            }
+        }
+    }
 }
