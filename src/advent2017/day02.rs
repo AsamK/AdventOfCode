@@ -3,14 +3,14 @@ use std::io::BufRead;
 
 pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {
     match level {
-        1 => level_1(crate::utils::read_lines(data)?),
-        2 => level_2(crate::utils::read_lines(data)?),
+        1 => level_1(&crate::utils::read_lines(data)?),
+        2 => level_2(&crate::utils::read_lines(data)?),
         _ => Err(Error::new(format!("Level {} not implemented", level))),
     }
     .map(|r| r.to_string())
 }
 
-fn level_1(lines: Vec<String>) -> ACResult<u32> {
+fn level_1(lines: &[String]) -> ACResult<u32> {
     let lines = lines
         .iter()
         .map(|line| {
@@ -34,7 +34,7 @@ fn level_1(lines: Vec<String>) -> ACResult<u32> {
     Ok(checksum)
 }
 
-fn level_2(lines: Vec<String>) -> ACResult<u32> {
+fn level_2(lines: &[String]) -> ACResult<u32> {
     let lines = lines
         .iter()
         .map(|line| {

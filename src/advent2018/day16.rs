@@ -146,11 +146,11 @@ fn get_matching_opcodes(sample: &Sample) -> Vec<Opcode> {
                 .execute_instruction(&mut result_registers);
             result_registers == sample.register_after
         })
-        .map(|opcode| opcode.clone())
+        .cloned()
         .collect()
 }
 
-fn get_mapping_from_samples(samples: &Vec<Sample>) -> Vec<Opcode> {
+fn get_mapping_from_samples(samples: &[Sample]) -> Vec<Opcode> {
     let possible_matches: Vec<(u8, Vec<Opcode>)> = samples
         .iter()
         .map(|s| (s.instruction.opcode, get_matching_opcodes(s)))
@@ -158,13 +158,13 @@ fn get_mapping_from_samples(samples: &Vec<Sample>) -> Vec<Opcode> {
     let mut mapping = vec![Vec::new(); 16];
     for (opcode_id, opcode_matches) in possible_matches {
         let old_matches = &mapping[opcode_id as usize];
-        if old_matches.len() == 0 {
+        if old_matches.is_empty() {
             mapping[opcode_id as usize] = opcode_matches;
         } else {
             mapping[opcode_id as usize] = old_matches
                 .iter()
                 .filter(|m| opcode_matches.contains(m))
-                .map(|c| c.clone())
+                .cloned()
                 .collect();
         }
     }

@@ -21,7 +21,7 @@ fn level_1(line: &str) -> ACResult<String> {
     elve_positions.push(1);
 
     loop {
-        let sum: u64 = elve_positions.iter().map(|i| recipes[*i] as u64).sum();
+        let sum: u64 = elve_positions.iter().map(|i| u64::from(recipes[*i])).sum();
 
         let mut new_recipes: Vec<u8> = sum
             .to_string()
@@ -63,7 +63,7 @@ fn level_2(line: &str) -> ACResult<usize> {
 
     let mut next_search_i = 0;
     loop {
-        let sum: u64 = elve_positions.iter().map(|i| recipes[*i] as u64).sum();
+        let sum: u64 = elve_positions.iter().map(|i| u64::from(recipes[*i])).sum();
 
         let mut new_recipes: Vec<u8> = sum
             .to_string()

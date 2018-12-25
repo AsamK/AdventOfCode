@@ -74,9 +74,9 @@ named!(parse_sub<&str, Dirs>,
     map!(
         many1!(alt!(
             parse_alt |
-            map!(parse_dir1, |dirs| Dirs::Some(dirs))
+            map!(parse_dir1, Dirs::Some)
         )),
-        |d| Dirs::List(d)
+        Dirs::List
     )
 );
 
@@ -131,7 +131,7 @@ enum Type {
 }
 
 #[allow(dead_code)]
-fn print_field(field: &Vec<Vec<Type>>) {
+fn print_field(field: &[Vec<Type>]) {
     for l in field.iter() {
         let mut skip = true;
         let res: String = l
@@ -178,7 +178,7 @@ impl Ord for PartialPath {
     }
 }
 
-fn get_longest_shortest_path_room(field: &Vec<Vec<Type>>, pos: &Point) -> usize {
+fn get_longest_shortest_path_room(field: &[Vec<Type>], pos: &Point) -> usize {
     let shortests = get_shortest_paths(field, pos);
 
     shortests
@@ -196,7 +196,7 @@ fn get_longest_shortest_path_room(field: &Vec<Vec<Type>>, pos: &Point) -> usize 
         .unwrap()
 }
 
-fn get_shortest_paths(field: &Vec<Vec<Type>>, pos: &Point) -> Vec<Vec<Option<usize>>> {
+fn get_shortest_paths(field: &[Vec<Type>], pos: &Point) -> Vec<Vec<Option<usize>>> {
     let mut shortests = vec![vec![None; field.len()]; field.len()];
 
     *get_mut(&mut shortests, pos) = Some(0);
@@ -270,12 +270,12 @@ fn get_next_positions(field: &mut Vec<Vec<Option<Type>>>, pos: &Point, dirs: &Di
     }
 }
 
-fn get_mut<'a, T>(field: &'a mut Vec<Vec<T>>, pos: &Point) -> &'a mut T {
+fn get_mut<'a, T>(field: &'a mut [Vec<T>], pos: &Point) -> &'a mut T {
     let offset = field.len() as isize / 2;
     &mut field[(pos.y + offset) as usize][(pos.x + offset) as usize]
 }
 
-fn get<'a, T>(field: &'a Vec<Vec<T>>, pos: &Point) -> &'a T {
+fn get<'a, T>(field: &'a [Vec<T>], pos: &Point) -> &'a T {
     let offset = field.len() as isize / 2;
     &field[(pos.y + offset) as usize][(pos.x + offset) as usize]
 }

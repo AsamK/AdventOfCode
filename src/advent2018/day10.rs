@@ -4,8 +4,8 @@ use std::io::BufRead;
 
 pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {
     match level {
-        1 => level_1(crate::utils::read_lines(data)?),
-        2 => level_2(crate::utils::read_lines(data)?).map(|r| r.to_string()),
+        1 => level_1(&crate::utils::read_lines(data)?),
+        2 => level_2(&crate::utils::read_lines(data)?).map(|r| r.to_string()),
         _ => Err(Error::new(format!("Level {} not implemented", level))),
     }
 }
@@ -49,7 +49,7 @@ named!(info_line<&str, Point>,
   )
 );
 
-fn level_1(lines: Vec<String>) -> ACResult<String> {
+fn level_1(lines: &[String]) -> ACResult<String> {
     let mut points: Vec<_> = lines.iter().map(|l| info_line(&l).unwrap().1).collect();
 
     for _ in 0..30000 {
@@ -62,14 +62,14 @@ fn level_1(lines: Vec<String>) -> ACResult<String> {
     panic!("Not found");
 }
 
-fn simulate_second(points: &mut Vec<Point>) {
+fn simulate_second(points: &mut [Point]) {
     for p in points.iter_mut() {
         p.position.x += p.velocity.x;
         p.position.y += p.velocity.y;
     }
 }
 
-fn possible_message(points: &Vec<Point>) -> bool {
+fn possible_message(points: &[Point]) -> bool {
     let mut xes = std::collections::HashMap::new();
     for p in points.iter() {
         let xe = xes.entry(p.position.x).or_insert(0);
@@ -83,7 +83,7 @@ fn possible_message(points: &Vec<Point>) -> bool {
     false
 }
 
-fn assemble_points(points: &Vec<Point>) -> String {
+fn assemble_points(points: &[Point]) -> String {
     let mut offset_x = i64::max_value();
     let mut offset_y = i64::max_value();
     let mut width = 0;
@@ -119,7 +119,7 @@ fn assemble_points(points: &Vec<Point>) -> String {
     String::from_utf8(field).unwrap()
 }
 
-fn level_2(lines: Vec<String>) -> ACResult<u64> {
+fn level_2(lines: &[String]) -> ACResult<u64> {
     let mut points: Vec<_> = lines.iter().map(|l| info_line(&l).unwrap().1).collect();
 
     for i in 0..30000 {

@@ -3,13 +3,13 @@ use std::io::BufRead;
 
 pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {
     match level {
-        1 => level_1(crate::utils::read_lines(data)?),
-        2 => level_2(crate::utils::read_lines(data)?),
+        1 => level_1(&crate::utils::read_lines(data)?),
+        2 => level_2(&crate::utils::read_lines(data)?),
         _ => Err(Error::new(format!("Level {} not implemented", level))),
     }
 }
 
-fn level_1(lines: Vec<String>) -> ACResult<String> {
+fn level_1(lines: &[String]) -> ACResult<String> {
     let serial: i32 = lines[0].parse().unwrap();
 
     let size = 300;
@@ -48,12 +48,12 @@ fn level_1(lines: Vec<String>) -> ACResult<String> {
     Ok(format!("{},{}", x, y))
 }
 
-fn get(grid: &Vec<i32>, x: u32, y: u32) -> i32 {
+fn get(grid: &[i32], x: u32, y: u32) -> i32 {
     grid[((x - 1) + (y - 1) * 300) as usize]
 }
 
 #[allow(dead_code)]
-fn print(grid: &Vec<i32>) {
+fn print(grid: &[i32]) {
     for x in 0..5 {
         let mut line = "".to_owned();
         for y in 0..5 {
@@ -63,7 +63,7 @@ fn print(grid: &Vec<i32>) {
     }
 }
 
-fn level_2(lines: Vec<String>) -> ACResult<String> {
+fn level_2(lines: &[String]) -> ACResult<String> {
     let serial: i32 = lines[0].parse().unwrap();
 
     let size = 300;

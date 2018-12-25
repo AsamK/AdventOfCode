@@ -200,9 +200,7 @@ fn level_2(line: &[String]) -> ACResult<usize> {
         }
 
         // Switch fields
-        let x = c;
-        c = n;
-        n = x;
+        std::mem::swap(&mut c, &mut n);
     }
 
     Ok(c.count_resources())

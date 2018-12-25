@@ -4,8 +4,8 @@ use std::io::BufRead;
 
 pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {
     match level {
-        1 => level_1(crate::utils::read_lines(data)?).map(|r| r.to_string()),
-        2 => level_2(crate::utils::read_lines(data)?).map(|r| r.to_string()),
+        1 => level_1(&crate::utils::read_lines(data)?).map(|r| r.to_string()),
+        2 => level_2(&crate::utils::read_lines(data)?).map(|r| r.to_string()),
         _ => Err(Error::new(format!("Level {} not implemented", level))),
     }
 }
@@ -84,7 +84,7 @@ fn get_max_width_height((w, h): (usize, usize), info: &FabricPieceInfo) -> (usiz
     )
 }
 
-fn level_1(lines: Vec<String>) -> ACResult<usize> {
+fn level_1(lines: &[String]) -> ACResult<usize> {
     let infos = lines
         .iter()
         .map(|line| info_line(nom::types::CompleteStr(&line)).map(|x| x.1))
@@ -109,23 +109,17 @@ fn level_1(lines: Vec<String>) -> ACResult<usize> {
             }
             let fab_b = FabricPiece::new(max_width, max_height, b);
 
-            for i in 0..(max_height * max_width) {
+            for (i, overlap) in overlap.iter_mut().enumerate() {
                 if fab_a.get(i) && fab_b.get(i) {
-                    overlap[i] += 1;
+                    *overlap += 1;
                 }
             }
         }
     }
-    let mut o = 0;
-    for i in 0..(max_height * max_width) {
-        if overlap[i] >= 1 {
-            o += 1;
-        }
-    }
-    Ok(o)
+    Ok(overlap.iter().filter(|o| **o >= 1).count())
 }
 
-fn level_2(lines: Vec<String>) -> ACResult<usize> {
+fn level_2(lines: &[String]) -> ACResult<usize> {
     let infos = lines
         .iter()
         .map(|line| info_line(nom::types::CompleteStr(&line)).map(|x| x.1))
@@ -159,9 +153,9 @@ fn level_2(lines: Vec<String>) -> ACResult<usize> {
         }
     }
     let mut overlap_free_i = None;
-    for i in 0..(lines.len()) {
-        if ov[i] == false {
-            if let Some(_) = overlap_free_i {
+    for (i, ov) in ov.iter().enumerate() {
+        if !*ov {
+            if overlap_free_i.is_some() {
                 return Err(Error::new_str("Two overlap free pieces found"));
             }
             overlap_free_i = Some(i + 1);

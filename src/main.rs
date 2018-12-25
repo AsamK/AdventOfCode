@@ -105,9 +105,9 @@ fn main() -> ACResult<()> {
         } else {
             // Download
             let session = config
-                .ok_or(Error::new_str("No session cookie to download input"))?
+                .ok_or_else(|| Error::new_str("No session cookie to download input"))?
                 .session_token
-                .ok_or(Error::new_str("No session cookie to download input"))?;
+                .ok_or_else(|| Error::new_str("No session cookie to download input"))?;
             let request_url = format!("https://adventofcode.com/{}/day/{}/input", year, day);
             let mut body = reqwest::Client::new()
                 .request(reqwest::Method::GET, &request_url)

@@ -23,9 +23,9 @@ fn level_1(line: &str) -> ACResult<u32> {
     let mut sum: u32 = 0;
     for (i, digit) in numbers.iter().enumerate() {
         let comp_index = (i + 1) % numbers.len();
-        let p = numbers.get(comp_index).unwrap();
-        if *p == *digit {
-            sum += *p as u32;
+        let p = numbers[comp_index];
+        if p == *digit {
+            sum += u32::from(p);
         }
     }
 
@@ -46,9 +46,9 @@ fn level_2(line: &str) -> ACResult<u32> {
     let skip = numbers.len() / 2;
     for (i, digit) in numbers.iter().enumerate() {
         let comp_index = (i + skip) % numbers.len();
-        let p = numbers.get(comp_index).unwrap();
-        if *p == *digit {
-            sum += *p as u32;
+        let p = numbers[comp_index];
+        if p == *digit {
+            sum += u32::from(p);
         }
     }
 

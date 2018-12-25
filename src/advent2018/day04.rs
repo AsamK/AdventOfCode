@@ -9,8 +9,8 @@ use std::io::BufRead;
 
 pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {
     match level {
-        1 => level_1(crate::utils::read_lines(data)?).map(|r| r.to_string()),
-        2 => level_2(crate::utils::read_lines(data)?).map(|r| r.to_string()),
+        1 => level_1(&crate::utils::read_lines(data)?).map(|r| r.to_string()),
+        2 => level_2(&crate::utils::read_lines(data)?).map(|r| r.to_string()),
         _ => Err(Error::new(format!("Level {} not implemented", level))),
     }
 }
@@ -91,7 +91,7 @@ named!(info_line<&str, GuardLine>,
   )
 );
 
-fn level_1(lines: Vec<String>) -> ACResult<u32> {
+fn level_1(lines: &[String]) -> ACResult<u32> {
     let mut infos = lines
         .iter()
         .map(|line| info_line(&line).map(|x| x.1))
@@ -113,7 +113,7 @@ fn level_1(lines: Vec<String>) -> ACResult<u32> {
             GuardEvent::WakeUp => {
                 let x = guard_id_to_minute_map
                     .entry(current_guard)
-                    .or_insert(vec![0; 60]);
+                    .or_insert_with(|| vec![0; 60]);
                 for l in begin_sleep_minute..i.minute {
                     (*x)[l as usize] += 1;
                 }
@@ -135,7 +135,7 @@ fn level_1(lines: Vec<String>) -> ACResult<u32> {
     Ok(minute_id as u32 * guard_id)
 }
 
-fn level_2(lines: Vec<String>) -> ACResult<u32> {
+fn level_2(lines: &[String]) -> ACResult<u32> {
     let mut infos = lines
         .iter()
         .map(|line| info_line(&line).map(|x| x.1))
@@ -157,7 +157,7 @@ fn level_2(lines: Vec<String>) -> ACResult<u32> {
             GuardEvent::WakeUp => {
                 let x = guard_id_to_minute_map
                     .entry(current_guard)
-                    .or_insert(vec![0; 60]);
+                    .or_insert_with(|| vec![0; 60]);
                 for l in begin_sleep_minute..i.minute {
                     (*x)[l as usize] += 1;
                 }
@@ -168,8 +168,8 @@ fn level_2(lines: Vec<String>) -> ACResult<u32> {
     let mut minute_id: u32 = 0;
     let mut guard_id: u32 = 0;
     for (id, x) in guard_id_to_minute_map {
-        for index in 0..60 {
-            let count = x[index];
+        for (index, x) in x.iter().enumerate() {
+            let count = *x;
             if count > max_count {
                 max_count = count;
                 minute_id = index as u32;

@@ -24,8 +24,8 @@ pub fn level_1(blueprint: &TuringBlueprint) -> ACResult<u32> {
     let mut band_left = Vec::new();
 
     loop {
-        let state =
-            get_state(&blueprint.states, state_name).ok_or(Error::new_str("Invalid state"))?;
+        let state = get_state(&blueprint.states, state_name)
+            .ok_or_else(|| Error::new_str("Invalid state"))?;
         let value = if cursor >= 0 {
             band_right[cursor as usize]
         } else {
@@ -74,7 +74,7 @@ pub fn level_1(blueprint: &TuringBlueprint) -> ACResult<u32> {
     }
 }
 
-fn get_state<'a>(states: &'a Vec<TuringState>, name: &str) -> Option<&'a TuringState> {
+fn get_state<'a>(states: &'a [TuringState], name: &str) -> Option<&'a TuringState> {
     for state in states {
         if state.name == name {
             return Some(&state);

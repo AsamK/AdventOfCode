@@ -50,7 +50,7 @@ impl Group {
         if self.weaknesses.contains(attack) {
             return 2;
         }
-        return 1;
+        1
     }
 }
 
@@ -78,7 +78,7 @@ alt!(
                 many1!(terminated!(parse_attack, opt!(tag!(", "))))
             )
         ) >>
-        ((immunes, weaks.unwrap_or_else(|| Vec::new())))
+        ((immunes, weaks.unwrap_or_else(Vec::new)))
     )
         |
     do_parse!(
@@ -90,7 +90,7 @@ alt!(
                 many1!(terminated!(parse_attack, opt!(tag!(", "))))
             )
         ) >>
-        (( immunes.unwrap_or_else(|| Vec::new()), weaks))
+        ((immunes.unwrap_or_else(Vec::new), weaks))
     )
 )
 );

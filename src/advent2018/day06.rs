@@ -3,8 +3,8 @@ use std::io::BufRead;
 
 pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {
     match level {
-        1 => level_1(crate::utils::read_lines(data)?).map(|r| r.to_string()),
-        2 => level_2(crate::utils::read_lines(data)?).map(|r| r.to_string()),
+        1 => level_1(&crate::utils::read_lines(data)?).map(|r| r.to_string()),
+        2 => level_2(&crate::utils::read_lines(data)?).map(|r| r.to_string()),
         _ => Err(Error::new(format!("Level {} not implemented", level))),
     }
 }
@@ -61,7 +61,7 @@ impl Field {
     }
 }
 
-fn level_1(lines: Vec<String>) -> ACResult<usize> {
+fn level_1(lines: &[String]) -> ACResult<usize> {
     let infos = lines
         .iter()
         .enumerate()
@@ -129,7 +129,7 @@ fn manhatten(x1: isize, y1: isize, x2: isize, y2: isize) -> usize {
 }
 
 fn get_nearest(
-    infos: &Vec<Point>,
+    infos: &[Point],
     x: isize,
     y: isize,
     x_offset: usize,
@@ -151,7 +151,7 @@ fn get_nearest(
     Some(points[0].0.i)
 }
 
-fn level_2(lines: Vec<String>) -> ACResult<usize> {
+fn level_2(lines: &[String]) -> ACResult<usize> {
     let infos = lines
         .iter()
         .enumerate()

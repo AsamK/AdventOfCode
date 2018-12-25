@@ -4,13 +4,13 @@ use std::io::BufRead;
 
 pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {
     match level {
-        1 => level_1(crate::utils::read_lines(data)?).map(|r| r.to_string()),
-        2 => level_2(crate::utils::read_lines(data)?),
+        1 => level_1(&crate::utils::read_lines(data)?).map(|r| r.to_string()),
+        2 => level_2(&crate::utils::read_lines(data)?),
         _ => Err(Error::new(format!("Level {} not implemented", level))),
     }
 }
 
-fn level_1(lines: Vec<String>) -> ACResult<i32> {
+fn level_1(lines: &[String]) -> ACResult<i32> {
     let mut c2 = 0;
     let mut c3 = 0;
     for line in lines.iter() {
@@ -22,7 +22,7 @@ fn level_1(lines: Vec<String>) -> ACResult<i32> {
         }
         let mut istwo = false;
         let mut isthree = false;
-        for (_, char_count) in &char_counts {
+        for char_count in char_counts.values() {
             if *char_count == 2 {
                 istwo = true;
             }
@@ -40,7 +40,7 @@ fn level_1(lines: Vec<String>) -> ACResult<i32> {
     Ok(c2 * c3)
 }
 
-fn level_2(lines: Vec<String>) -> ACResult<String> {
+fn level_2(lines: &[String]) -> ACResult<String> {
     for line in lines.iter() {
         for line2 in lines.iter() {
             if line == line2 {

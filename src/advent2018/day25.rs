@@ -79,8 +79,7 @@ fn level_1(lines: &[String]) -> ACResult<usize> {
 
         let existing_constellation = constellations.iter_mut().find(|c| {
             c.iter()
-                .find(|p| constellation.iter().find(|p2| p.dist(p2) <= 3).is_some())
-                .is_some()
+                .any(|p| constellation.iter().any(|p2| p.dist(p2) <= 3))
         });
         if let Some(c2) = existing_constellation {
             c2.append(&mut constellation);
@@ -96,11 +95,7 @@ fn level_1(lines: &[String]) -> ACResult<usize> {
                 if j <= i {
                     continue;
                 }
-                if c1
-                    .iter()
-                    .find(|p1| c2.iter().find(|p2| p1.dist(p2) <= 3).is_some())
-                    .is_some()
-                {
+                if c1.iter().any(|p1| c2.iter().any(|p2| p1.dist(p2) <= 3)) {
                     dup = Some((i, j));
                     break 'outer;
                 }

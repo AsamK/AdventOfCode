@@ -3,21 +3,21 @@ use std::io::BufRead;
 
 pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {
     match level {
-        1 => level_1(crate::utils::read_lines(data)?).map(|r| r.to_string()),
-        2 => level_2(crate::utils::read_lines(data)?).map(|r| r.to_string()),
+        1 => level_1(&crate::utils::read_lines(data)?).map(|r| r.to_string()),
+        2 => level_2(&crate::utils::read_lines(data)?).map(|r| r.to_string()),
         _ => Err(Error::new(format!("Level {} not implemented", level))),
     }
 }
 
-fn level_1(lines: Vec<String>) -> ACResult<usize> {
-    let line = lines.get(0).unwrap();
+fn level_1(lines: &[String]) -> ACResult<usize> {
+    let line = &lines[0];
     Ok(get_reacted_len(line))
 }
 
-fn level_2(lines: Vec<String>) -> ACResult<usize> {
-    let line = lines.get(0).unwrap();
+fn level_2(lines: &[String]) -> ACResult<usize> {
+    let line = &lines[0];
 
-    let alphabet = (b'A'..b'Z' + 1).map(|c| c as char);
+    let alphabet = (b'A'..=b'Z').map(|c| c as char);
 
     let min = alphabet
         .map(|l| {

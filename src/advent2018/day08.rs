@@ -3,8 +3,8 @@ use std::io::BufRead;
 
 pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {
     match level {
-        1 => level_1(crate::utils::read_lines(data)?).map(|r| r.to_string()),
-        2 => level_2(crate::utils::read_lines(data)?).map(|r| r.to_string()),
+        1 => level_1(&crate::utils::read_lines(data)?).map(|r| r.to_string()),
+        2 => level_2(&crate::utils::read_lines(data)?).map(|r| r.to_string()),
         _ => Err(Error::new(format!("Level {} not implemented", level))),
     }
 }
@@ -14,9 +14,9 @@ struct Node {
     metadata: Vec<u32>,
 }
 
-fn level_1(lines: Vec<String>) -> ACResult<u32> {
+fn level_1(lines: &[String]) -> ACResult<u32> {
     let numbers: Vec<u32> = lines[0]
-        .split(" ")
+        .split(' ')
         .map(|s| s.parse().map_err(|_| Error::new_str("Failed to parse")))
         .collect::<ACResult<_>>()?;
     let node = parse_node(&mut numbers.iter());
@@ -46,7 +46,7 @@ fn parse_node<'a, T: std::iter::Iterator<Item = &'a u32>>(numbers: &mut T) -> No
 }
 
 fn count_node_2(node: &Node) -> u32 {
-    if node.children.len() == 0 {
+    if node.children.is_empty() {
         node.metadata.iter().sum()
     } else {
         node.metadata
@@ -63,9 +63,9 @@ fn count_node_2(node: &Node) -> u32 {
     }
 }
 
-fn level_2(lines: Vec<String>) -> ACResult<u32> {
+fn level_2(lines: &[String]) -> ACResult<u32> {
     let numbers: Vec<u32> = lines[0]
-        .split(" ")
+        .split(' ')
         .map(|s| s.parse().map_err(|_| Error::new_str("Failed to parse")))
         .collect::<ACResult<_>>()?;
     let node = parse_node(&mut numbers.iter());

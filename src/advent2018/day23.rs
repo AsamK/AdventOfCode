@@ -6,8 +6,8 @@ use std::io::BufRead;
 
 pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {
     match level {
-        1 => level_1(crate::utils::read_lines(data)?).map(|r| r.to_string()),
-        2 => level_2(crate::utils::read_lines(data)?).map(|r| r.to_string()),
+        1 => level_1(&crate::utils::read_lines(data)?).map(|r| r.to_string()),
+        2 => level_2(&crate::utils::read_lines(data)?).map(|r| r.to_string()),
         _ => Err(Error::new(format!("Level {} not implemented", level))),
     }
 }
@@ -72,7 +72,7 @@ named!(
     )
 );
 
-fn level_1(lines: Vec<String>) -> ACResult<usize> {
+fn level_1(lines: &[String]) -> ACResult<usize> {
     let bots: Vec<_> = lines
         .iter()
         .map(|l| parse_bot(nom::types::CompleteStr(l)).unwrap().1)
@@ -88,7 +88,7 @@ fn level_1(lines: Vec<String>) -> ACResult<usize> {
     Ok(bots_in_range)
 }
 
-fn level_2(lines: Vec<String>) -> ACResult<i64> {
+fn level_2(lines: &[String]) -> ACResult<i64> {
     let bots: Vec<_> = lines
         .iter()
         .map(|l| parse_bot(nom::types::CompleteStr(l)).unwrap().1)

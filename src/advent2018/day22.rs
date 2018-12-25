@@ -183,17 +183,16 @@ fn build_field(start: &Point, target: &Point, depth: u64) -> Field<Type> {
     *field.get_mut(target.x, target.y) = Some(Type::Target);
     for y in 0..depth {
         for x in 0..depth {
-            let geologic_index = if x == start.x && y == start.y {
-                0
-            } else if x == target.x && y == target.y {
-                0
-            } else if y == 0 {
-                x * 16807
-            } else if x == 0 {
-                y * 48271
-            } else {
-                *field_geologic.get(x - 1, y) * *field_geologic.get(x, y - 1)
-            };
+            let geologic_index =
+                if (x == start.x && y == start.y) || (x == target.x && y == target.y) {
+                    0
+                } else if y == 0 {
+                    x * 16807
+                } else if x == 0 {
+                    y * 48271
+                } else {
+                    *field_geologic.get(x - 1, y) * *field_geologic.get(x, y - 1)
+                };
 
             let erosion_level = (geologic_index + depth) % 20183;
 
@@ -362,7 +361,7 @@ impl Game {
             }
         }
         self.next.push(PartialPath {
-            next_point: point.clone(),
+            next_point: point,
             dist: new_dist,
             tool: tool.clone(),
         })

@@ -3,8 +3,8 @@ use std::io::BufRead;
 
 pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {
     match level {
-        1 => level_1(crate::utils::read_lines(data)?),
-        2 => level_2(crate::utils::read_lines(data)?),
+        1 => level_1(&crate::utils::read_lines(data)?),
+        2 => level_2(&crate::utils::read_lines(data)?),
         _ => Err(Error::new(format!("Level {} not implemented", level))),
     }
 }
@@ -115,7 +115,7 @@ struct Game {
 }
 
 impl Game {
-    fn new(field: &Vec<Vec<char>>) -> Self {
+    fn new(field: &[Vec<char>]) -> Self {
         let width = field[0].len();
         let height = field.len();
         let tracks = field
@@ -261,7 +261,7 @@ fn next_position(x: usize, y: usize, direction: &CartDirection) -> (usize, usize
     }
 }
 
-fn level_1(lines: Vec<String>) -> ACResult<String> {
+fn level_1(lines: &[String]) -> ACResult<String> {
     let field = lines
         .iter()
         .map(|l| l.chars().collect::<Vec<_>>())
@@ -274,7 +274,7 @@ fn level_1(lines: Vec<String>) -> ACResult<String> {
         }
     }
 }
-fn level_2(lines: Vec<String>) -> ACResult<String> {
+fn level_2(lines: &[String]) -> ACResult<String> {
     let field = lines
         .iter()
         .map(|l| l.chars().collect::<Vec<_>>())

@@ -236,7 +236,7 @@ impl Game {
                 FieldType::Goblin(p) => p.hit_points,
                 _ => panic!("Unreachable"),
             })
-            .map(|p| p.clone())
+            .cloned()
     }
 
     fn attack(&mut self, victim_point: &Point) {
@@ -304,7 +304,7 @@ impl Game {
                 FieldType::Empty => true,
                 _ => false,
             })
-            .map(|p| p.clone())
+            .cloned()
             .collect()
     }
 
@@ -339,66 +339,60 @@ impl Game {
             });
         }
 
-        loop {
-            if let Some(last) = partials.pop() {
-                let shortest = shortest_path_len.load(std::sync::atomic::Ordering::Relaxed);
-                if last.path_start.len() + 1 > shortest {
+        while let Some(last) = partials.pop() {
+            let shortest = shortest_path_len.load(std::sync::atomic::Ordering::Relaxed);
+            if last.path_start.len() + 1 > shortest {
+                continue;
+            }
+            if last.next_point == *to {
+                let mut path = last.path_start.clone();
+                path.push(last.next_point.clone());
+                shortests[last.next_point.x as usize
+                    + last.next_point.y as usize * self.width as usize] = path.len();
+                if shortest > path.len() {
+                    let shortest = shortest_path_len.load(std::sync::atomic::Ordering::Relaxed);
+                    if shortest > path.len() {
+                        let _ignore = shortest_path_len.compare_exchange(
+                            shortest,
+                            path.len(),
+                            std::sync::atomic::Ordering::Relaxed,
+                            std::sync::atomic::Ordering::Relaxed,
+                        );
+                    }
+                }
+                paths.push(path);
+            } else {
+                if last.path_start.len() + 1 >= shortest {
                     continue;
                 }
-                if last.next_point == *to {
-                    let mut path = last.path_start.clone();
-                    path.push(last.next_point.clone());
-                    shortests[last.next_point.x as usize
-                        + last.next_point.y as usize * self.width as usize] = path.len();
-                    if shortest > path.len() {
-                        let shortest = shortest_path_len.load(std::sync::atomic::Ordering::Relaxed);
-                        if shortest > path.len() {
-                            let _ignore = shortest_path_len.compare_exchange(
-                                shortest,
-                                path.len(),
-                                std::sync::atomic::Ordering::Relaxed,
-                                std::sync::atomic::Ordering::Relaxed,
-                            );
-                        }
-                    }
-                    paths.push(path);
-                } else {
-                    if last.path_start.len() + 1 >= shortest {
-                        continue;
-                    }
-                    if shortests[last.next_point.x as usize
-                        + last.next_point.y as usize * self.width as usize]
-                        <= last.path_start.len()
-                    {
-                        continue;
-                    }
-                    if to.get_distance(&last.next_point) as usize >= shortest {
-                        continue;
-                    }
-                    let mut path = last.path_start.clone();
-                    path.push(last.next_point.clone());
-                    shortests[last.next_point.x as usize
-                        + last.next_point.y as usize * self.width as usize] = path.len();
-                    for p in Game::sort_by_nearest(self.get_adjacent_empty(&last.next_point), &to) {
-                        if last.path_start.contains(&p) {
-                            continue;
-                        }
-                        if shortests[p.x as usize + p.y as usize * self.width as usize]
-                            <= path.len()
-                        {
-                            continue;
-                        }
-
-                        let dist = p.get_distance(to);
-                        partials.push(PartialPath {
-                            path_start: path.clone(),
-                            next_point: p,
-                            ord: path.len() + dist as usize,
-                        });
-                    }
+                if shortests
+                    [last.next_point.x as usize + last.next_point.y as usize * self.width as usize]
+                    <= last.path_start.len()
+                {
+                    continue;
                 }
-            } else {
-                break;
+                if to.get_distance(&last.next_point) as usize >= shortest {
+                    continue;
+                }
+                let mut path = last.path_start.clone();
+                path.push(last.next_point.clone());
+                shortests[last.next_point.x as usize
+                    + last.next_point.y as usize * self.width as usize] = path.len();
+                for p in Game::sort_by_nearest(self.get_adjacent_empty(&last.next_point), &to) {
+                    if last.path_start.contains(&p) {
+                        continue;
+                    }
+                    if shortests[p.x as usize + p.y as usize * self.width as usize] <= path.len() {
+                        continue;
+                    }
+
+                    let dist = p.get_distance(to);
+                    partials.push(PartialPath {
+                        path_start: path.clone(),
+                        next_point: p,
+                        ord: path.len() + dist as usize,
+                    });
+                }
             }
         }
 
@@ -407,7 +401,7 @@ impl Game {
 
     fn get_first_route_in_reading_order<'a>(
         point: &Point,
-        routes: &'a Vec<&'a Vec<Point>>,
+        routes: &'a [&'a Vec<Point>],
     ) -> &'a Vec<Point> {
         for adj in point.get_adjacent_points().iter() {
             for p in routes.iter() {
@@ -432,7 +426,7 @@ impl Game {
             _ => panic!("Unreachable"),
         };
 
-        if targets.len() == 0 {
+        if targets.is_empty() {
             return true;
         }
 
@@ -468,7 +462,7 @@ impl Game {
             .filter(|p| p.len() == target_adjacent_points[0].len())
             .collect();
 
-        if routes.len() == 0 {
+        if routes.is_empty() {
             return false;
         }
 
@@ -527,10 +521,9 @@ impl Game {
         let mut count = 0;
         for y in 0..self.height {
             for x in 0..self.width {
-                match self.get(x, y) {
-                    FieldType::Elf(_) => count += 1,
-                    _ => {}
-                };
+                if let FieldType::Elf(_) = self.get(x, y) {
+                    count += 1;
+                }
             }
         }
         count
@@ -563,7 +556,7 @@ impl Game {
     }
 }
 
-fn level_1(line: &Vec<String>) -> ACResult<u32> {
+fn level_1(line: &[String]) -> ACResult<u32> {
     let mut game = Game::new(line, 3, 3);
     let mut round = 0;
     loop {
@@ -577,7 +570,7 @@ fn level_1(line: &Vec<String>) -> ACResult<u32> {
     Ok(hit_power * round)
 }
 
-fn level_2(line: &Vec<String>) -> ACResult<u32> {
+fn level_2(line: &[String]) -> ACResult<u32> {
     let goblin_attack = 3;
     let mut power = goblin_attack + 1;
     'outer: loop {
