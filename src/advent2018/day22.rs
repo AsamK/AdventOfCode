@@ -1,4 +1,5 @@
 use crate::errors::{ACResult, Error};
+use crate::utils::Field;
 use nom::{
     call, complete, do_parse, error_position, map, named, preceded, tag, take_while1, tuple,
     tuple_parser,
@@ -29,69 +30,47 @@ fn parse_line<T: Read>(mut data: T) -> ACResult<Input> {
 
 #[derive(Debug)]
 struct Input {
-    depth: u64,
+    depth: u32,
     target: Point,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 struct Point {
-    x: u64,
-    y: u64,
+    x: u32,
+    y: u32,
 }
 
 impl Point {
-    fn new(x: u64, y: u64) -> Self {
+    fn new(x: u32, y: u32) -> Self {
         Point { x, y }
     }
 }
 
-named!(parse_number_u64<&str, u64>,
+named!(parse_number_u32<&str, u32>,
     complete!(map!(take_while1!(|c: char| c.is_numeric()), |c| c.to_string().parse().unwrap()))
 );
 
 named!(parse_point<&str, Point>,
   do_parse!(
-    x: parse_number_u64 >>
+    x: parse_number_u32 >>
     tag!(",") >>
-    y: parse_number_u64 >>
+    y: parse_number_u32 >>
     (Point {x, y})
   )
 );
 
 named!(parse_input<&str, Input>,
     do_parse!(
-        depth: preceded!(tag!("depth: "), parse_number_u64) >>
+        depth: preceded!(tag!("depth: "), parse_number_u32) >>
         tag!("\n") >>
         target: preceded!(tag!("target: "), parse_point) >>
         (Input { depth, target })
     )
 );
 
-struct Field<T> {
-    field: Vec<T>,
-    depth: u64,
-}
-
-impl<T: Default + Clone> Field<T> {
-    fn new(depth: u64) -> Self {
-        Field {
-            field: vec![T::default(); (depth * depth) as usize],
-            depth,
-        }
-    }
-
-    fn get(&self, x: u64, y: u64) -> &T {
-        &self.field[(y * self.depth + x) as usize]
-    }
-
-    fn get_mut(&mut self, x: u64, y: u64) -> &mut T {
-        &mut self.field[(y * self.depth + x) as usize]
-    }
-}
-
 impl Field<Type> {
     #[allow(dead_code)]
-    fn print(&self, max_x: u64, max_y: u64) {
+    fn print(&self, max_x: u32, max_y: u32) {
         for y in 0..=max_y {
             let line: String = (0..=max_x)
                 .map(|x| {
@@ -111,18 +90,9 @@ impl Field<Type> {
     }
 }
 
-impl Field<Option<Type>> {
-    fn into(self) -> Field<Type> {
-        Field {
-            field: self.field.into_iter().map(|c| c.unwrap()).collect(),
-            depth: self.depth,
-        }
-    }
-}
-
-impl Field<HashMap<Tool, u64>> {
+impl Field<HashMap<Tool, u32>> {
     #[allow(dead_code)]
-    fn print(&self, max_x: u64, max_y: u64) {
+    fn print(&self, max_x: u32, max_y: u32) {
         for y in 0..=max_y {
             let line: String = (0..=max_x)
                 .map(|x| {
@@ -165,7 +135,7 @@ impl Default for Type {
 }
 
 impl Type {
-    fn get_risk(&self) -> u64 {
+    fn get_risk(&self) -> u32 {
         match self {
             Type::Rocky => 0,
             Type::Wet => 1,
@@ -176,9 +146,9 @@ impl Type {
     }
 }
 
-fn build_field(start: &Point, target: &Point, depth: u64) -> Field<Type> {
-    let mut field_geologic = Field::<u64>::new(depth);
-    let mut field = Field::new(depth);
+fn build_field(start: &Point, target: &Point, depth: u32) -> Field<Type> {
+    let mut field_geologic = Field::<u32>::new(depth, depth);
+    let mut field = Field::new(depth, depth);
     *field.get_mut(0, 0) = Some(Type::Mouth);
     *field.get_mut(target.x, target.y) = Some(Type::Target);
     for y in 0..depth {
@@ -217,7 +187,7 @@ fn build_field(start: &Point, target: &Point, depth: u64) -> Field<Type> {
 #[derive(PartialEq, Eq, Debug)]
 struct PartialPath {
     next_point: Point,
-    dist: u64,
+    dist: u32,
     tool: Tool,
 }
 
@@ -246,7 +216,7 @@ enum Tool {
 
 struct Game {
     field: Field<Type>,
-    shortests: Field<HashMap<Tool, u64>>,
+    shortests: Field<HashMap<Tool, u32>>,
     next: BinaryHeap<PartialPath>,
     target: Point,
 }
@@ -260,7 +230,7 @@ impl Game {
             dist: 0,
         });
 
-        let shortests = Field::new(field.depth);
+        let shortests = Field::new(field.width(), field.height());
 
         Game {
             field,
@@ -270,7 +240,7 @@ impl Game {
         }
     }
 
-    fn get_shortest_minutes(mut self) -> u64 {
+    fn get_shortest_minutes(mut self) -> u32 {
         while let Some(next) = self.next.pop() {
             if let Some(dist) = self
                 .shortests
@@ -345,7 +315,7 @@ impl Game {
         panic!("Shouldn't happen")
     }
 
-    fn add_if_shorter(&mut self, point: Point, tool: &Tool, dist: u64) {
+    fn add_if_shorter(&mut self, point: Point, tool: &Tool, dist: u32) {
         let f = self.field.get(point.x, point.y);
         let tools = Self::get_necessary_tool(f);
         if !tools.contains(tool) {
@@ -385,7 +355,7 @@ impl Game {
     }
 }
 
-fn level_1(input: &Input) -> ACResult<u64> {
+fn level_1(input: &Input) -> ACResult<u32> {
     let start = Point::new(0, 0);
 
     let field = build_field(&start, &input.target, input.depth);
@@ -401,7 +371,7 @@ fn level_1(input: &Input) -> ACResult<u64> {
     Ok(risk_level)
 }
 
-fn level_2(input: &Input) -> ACResult<u64> {
+fn level_2(input: &Input) -> ACResult<u32> {
     let start = Point::new(0, 0);
 
     let field = build_field(&start, &input.target, input.depth);
