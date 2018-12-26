@@ -1,5 +1,5 @@
 use crate::errors::{ACResult, Error};
-use rayon::prelude::*;
+use crate::utils::Field;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::io::BufRead;
@@ -27,12 +27,12 @@ struct Player {
 
 #[derive(PartialEq, Debug, Clone, Eq)]
 struct Point {
-    x: u8,
-    y: u8,
+    x: u32,
+    y: u32,
 }
 
 impl Point {
-    fn new(x: u8, y: u8) -> Self {
+    fn new(x: u32, y: u32) -> Self {
         Point { x, y }
     }
 
@@ -48,7 +48,7 @@ impl Point {
     }
 
     fn below(&self) -> Option<Self> {
-        if self.y != u8::max_value() {
+        if self.y != u32::max_value() {
             Some(Point {
                 x: self.x,
                 y: self.y + 1,
@@ -70,7 +70,7 @@ impl Point {
     }
 
     fn right(&self) -> Option<Self> {
-        if self.x != u8::max_value() {
+        if self.x != u32::max_value() {
             Some(Point {
                 x: self.x + 1,
                 y: self.y,
@@ -95,26 +95,14 @@ impl Point {
         }
         result
     }
-
-    fn get_distance(&self, point: &Point) -> u8 {
-        (if self.y > point.y {
-            self.y - point.y
-        } else {
-            point.y - self.y
-        }) + (if self.x > point.x {
-            self.x - point.x
-        } else {
-            point.x - self.x
-        })
-    }
 }
 
 #[derive(PartialEq, Eq)]
 struct PartialPath {
-    path_start: Vec<Point>,
+    path_start: Point,
     next_point: Point,
-    // path length + distance from next_point to target
-    ord: usize,
+    // path length * 4 + prio of first point
+    dist: usize,
 }
 
 impl PartialOrd for PartialPath {
@@ -125,7 +113,7 @@ impl PartialOrd for PartialPath {
 
 impl Ord for PartialPath {
     fn cmp(&self, other: &PartialPath) -> Ordering {
-        match self.ord.cmp(&other.ord) {
+        match self.dist.cmp(&other.dist) {
             Ordering::Greater => Ordering::Less,
             Ordering::Less => Ordering::Greater,
             Ordering::Equal => Ordering::Equal,
@@ -136,17 +124,15 @@ impl Ord for PartialPath {
 static START_HIT_POINTS: u32 = 200;
 
 struct Game {
-    width: u8,
-    height: u8,
-    field: Vec<FieldType>,
+    field: Field<FieldType>,
     attack_power_goblin: u32,
     attack_power_elf: u32,
 }
 
 impl Game {
     fn new(input: &[String], attack_power_elf: u32, attack_power_goblin: u32) -> Self {
-        let height = input.len() as u8;
-        let width = input[0].len() as u8;
+        let height = input.len() as u32;
+        let width = input[0].len() as u32;
         let field = input
             .iter()
             .flat_map(|l| {
@@ -166,27 +152,25 @@ impl Game {
             })
             .collect();
         Game {
-            height,
-            width,
-            field,
+            field: Field::from(field, width, height),
             attack_power_elf,
             attack_power_goblin,
         }
     }
 
     fn get_point(&self, point: &Point) -> &FieldType {
-        &self.field[point.x as usize + point.y as usize * self.width as usize]
+        &self.field.get(point.x, point.y)
     }
 
     fn set(&mut self, point: &Point, field: FieldType) {
-        self.field[point.x as usize + point.y as usize * self.width as usize] = field;
+        *self.field.get_mut(point.x, point.y) = field;
     }
-    fn get(&self, x: u8, y: u8) -> &FieldType {
-        &self.field[x as usize + y as usize * self.width as usize]
+    fn get(&self, x: u32, y: u32) -> &FieldType {
+        &self.field.get(x, y)
     }
 
     fn get_mut(&mut self, point: &Point) -> &mut FieldType {
-        &mut self.field[point.x as usize + point.y as usize * self.width as usize]
+        self.field.get_mut(point.x, point.y)
     }
 
     fn get_adjacent(&self, point: &Point) -> Vec<Point> {
@@ -194,16 +178,16 @@ impl Game {
         if let Some(p) = point.above() {
             result.push(p);
         }
-        if let Some(p) = point.below() {
-            if p.y < self.width {
-                result.push(p);
-            }
-        }
         if let Some(p) = point.left() {
             result.push(p);
         }
         if let Some(p) = point.right() {
-            if p.y < self.height {
+            if p.y < self.field.height() {
+                result.push(p);
+            }
+        }
+        if let Some(p) = point.below() {
+            if p.y < self.field.width() {
                 result.push(p);
             }
         }
@@ -275,8 +259,8 @@ impl Game {
 
     fn find_target_elves(&self) -> Vec<Point> {
         let mut result = Vec::new();
-        for y in 0..self.height {
-            for x in 0..self.width {
+        for y in 0..self.field.height() {
+            for x in 0..self.field.width() {
                 if let FieldType::Elf(_) = self.get(x, y) {
                     result.push(Point::new(x, y));
                 }
@@ -287,8 +271,8 @@ impl Game {
 
     fn find_target_goblins(&self) -> Vec<Point> {
         let mut result = Vec::new();
-        for y in 0..self.height {
-            for x in 0..self.width {
+        for y in 0..self.field.height() {
+            for x in 0..self.field.width() {
                 if let FieldType::Goblin(_) = self.get(x, y) {
                     result.push(Point::new(x, y));
                 }
@@ -297,120 +281,72 @@ impl Game {
         result
     }
 
-    fn get_adjacent_empty(&self, point: &Point) -> Vec<Point> {
+    fn get_adjacent_empty(&self, point: &Point) -> Vec<(usize, Point)> {
         self.get_adjacent(point)
             .iter()
-            .filter(|f| match self.get_point(f) {
+            .enumerate()
+            .filter(|(_, f)| match self.get_point(f) {
                 FieldType::Empty => true,
                 _ => false,
             })
-            .cloned()
+            .map(|(i, p)| (i, p.clone()))
             .collect()
     }
 
-    fn sort_by_nearest(points: Vec<Point>, target: &Point) -> Vec<Point> {
-        let mut points = points;
-        points.sort_unstable_by(|a, b| {
-            let a = target.get_distance(a);
-            let b = target.get_distance(b);
-            b.cmp(&a)
-        });
-        points
-    }
-
-    fn get_paths(
-        &self,
-        from: &Point,
-        to: &Point,
-        shortest_path_len: &std::sync::atomic::AtomicUsize,
-    ) -> Vec<Vec<Point>> {
-        let mut paths = Vec::new();
-
-        let mut shortests = vec![usize::max_value(); self.width as usize * self.height as usize];
+    fn get_shortest_path(&self, from: &Point, to: &[Point]) -> Option<Point> {
+        let mut shortests: Field<Option<usize>> =
+            Field::new(self.field.width(), self.field.height());
 
         let mut partials = BinaryHeap::new();
 
-        for p in Game::sort_by_nearest(self.get_adjacent_empty(from), to) {
-            let dist = p.get_distance(to);
+        for (i, p) in self.get_adjacent_empty(from) {
             partials.push(PartialPath {
-                path_start: vec![from.clone()],
+                path_start: p.clone(),
                 next_point: p,
-                ord: 1 + dist as usize,
+                dist: 4 + i,
             });
         }
 
+        let mut shortest = usize::max_value();
+        let mut result = None;
+
         while let Some(last) = partials.pop() {
-            let shortest = shortest_path_len.load(std::sync::atomic::Ordering::Relaxed);
-            if last.path_start.len() + 1 > shortest {
+            if last.dist > shortest {
+                break;
+            }
+            if let Some(s) = *shortests.get(last.next_point.x, last.next_point.y) {
+                if s <= last.dist {
+                    continue;
+                }
+            }
+            *shortests.get_mut(last.next_point.x, last.next_point.y) = Some(last.dist);
+
+            if to.contains(&last.next_point) {
+                if shortest > last.dist {
+                    shortest = last.dist;
+                    result = Some(last.path_start);
+                } else if shortest == last.dist && result != Some(last.path_start) {
+                    panic!("Invalid state");
+                }
                 continue;
             }
-            if last.next_point == *to {
-                let mut path = last.path_start.clone();
-                path.push(last.next_point.clone());
-                shortests[last.next_point.x as usize
-                    + last.next_point.y as usize * self.width as usize] = path.len();
-                if shortest > path.len() {
-                    let shortest = shortest_path_len.load(std::sync::atomic::Ordering::Relaxed);
-                    if shortest > path.len() {
-                        let _ignore = shortest_path_len.compare_exchange(
-                            shortest,
-                            path.len(),
-                            std::sync::atomic::Ordering::Relaxed,
-                            std::sync::atomic::Ordering::Relaxed,
-                        );
-                    }
-                }
-                paths.push(path);
-            } else {
-                if last.path_start.len() + 1 >= shortest {
-                    continue;
-                }
-                if shortests
-                    [last.next_point.x as usize + last.next_point.y as usize * self.width as usize]
-                    <= last.path_start.len()
-                {
-                    continue;
-                }
-                if to.get_distance(&last.next_point) as usize >= shortest {
-                    continue;
-                }
-                let mut path = last.path_start.clone();
-                path.push(last.next_point.clone());
-                shortests[last.next_point.x as usize
-                    + last.next_point.y as usize * self.width as usize] = path.len();
-                for p in Game::sort_by_nearest(self.get_adjacent_empty(&last.next_point), &to) {
-                    if last.path_start.contains(&p) {
+            let next_dist = last.dist + 4;
+            for (_, p) in self.get_adjacent_empty(&last.next_point) {
+                if let Some(s) = *shortests.get(p.x, p.y) {
+                    if s <= next_dist {
                         continue;
                     }
-                    if shortests[p.x as usize + p.y as usize * self.width as usize] <= path.len() {
-                        continue;
-                    }
+                }
 
-                    let dist = p.get_distance(to);
-                    partials.push(PartialPath {
-                        path_start: path.clone(),
-                        next_point: p,
-                        ord: path.len() + dist as usize,
-                    });
-                }
+                partials.push(PartialPath {
+                    path_start: last.path_start.clone(),
+                    next_point: p,
+                    dist: next_dist,
+                });
             }
         }
 
-        paths
-    }
-
-    fn get_first_route_in_reading_order<'a>(
-        point: &Point,
-        routes: &'a [&'a Vec<Point>],
-    ) -> &'a Vec<Point> {
-        for adj in point.get_adjacent_points().iter() {
-            for p in routes.iter() {
-                if p[1] == *adj {
-                    return p;
-                }
-            }
-        }
-        panic!("Shouldn't happen");
+        result
     }
 
     fn handle_player(&mut self, point: &Point) -> bool {
@@ -430,7 +366,7 @@ impl Game {
             return true;
         }
 
-        let mut target_adjacent_points: Vec<_> = targets
+        let target_adjacent_points: Vec<_> = targets
             .iter()
             .flat_map(|p| p.get_adjacent_points())
             .filter(|f| match self.get_point(f) {
@@ -438,46 +374,19 @@ impl Game {
                 _ => false,
             })
             .collect();
-        target_adjacent_points.sort_unstable_by_key(|p| point.get_distance(p));
 
-        let shortest_path = std::sync::atomic::AtomicUsize::new(usize::max_value());
+        let route = self.get_shortest_path(point, &target_adjacent_points);
 
-        let mut target_adjacent_points: Vec<_> = target_adjacent_points
-            .par_iter()
-            .flat_map(|p| {
-                if point.get_distance(&p) as usize
-                    > shortest_path.load(std::sync::atomic::Ordering::Relaxed)
-                {
-                    Vec::new()
-                } else {
-                    self.get_paths(point, &p, &shortest_path)
-                }
-            })
-            .collect();
-
-        target_adjacent_points.sort_by_key(|p| p.len());
-
-        let routes: Vec<_> = target_adjacent_points
-            .iter()
-            .filter(|p| p.len() == target_adjacent_points[0].len())
-            .collect();
-
-        if routes.is_empty() {
+        if route.is_none() {
             return false;
         }
 
-        let route = if routes.len() > 1 {
-            Game::get_first_route_in_reading_order(point, &routes)
-        } else {
-            routes[0]
-        };
+        let move_to = route.unwrap();
 
-        let move_to = &route[1];
-
-        self.set(move_to, field.clone());
+        self.set(&move_to, field.clone());
         self.set(point, FieldType::Empty);
 
-        if let Some(victim_point) = self.get_victim(move_to) {
+        if let Some(victim_point) = self.get_victim(&move_to) {
             self.attack(&victim_point);
         }
 
@@ -486,8 +395,8 @@ impl Game {
 
     fn remaining_hit_power(&self) -> u32 {
         let mut count = 0;
-        for y in 0..self.height {
-            for x in 0..self.width {
+        for y in 0..self.field.height() {
+            for x in 0..self.field.width() {
                 count += match self.get(x, y) {
                     FieldType::Elf(p) | FieldType::Goblin(p) => p.hit_points,
                     _ => 0,
@@ -500,8 +409,8 @@ impl Game {
 
     #[allow(dead_code)]
     fn print(&self) {
-        for y in 0..self.height {
-            let line: String = (0..self.width)
+        for y in 0..self.field.height() {
+            let line: String = (0..self.field.width())
                 .map(|x| {
                     match self.get(x, y) {
                         FieldType::Empty => '.',
@@ -519,8 +428,8 @@ impl Game {
 
     fn count_elves(&self) -> usize {
         let mut count = 0;
-        for y in 0..self.height {
-            for x in 0..self.width {
+        for y in 0..self.field.height() {
+            for x in 0..self.field.width() {
                 if let FieldType::Elf(_) = self.get(x, y) {
                     count += 1;
                 }
@@ -531,8 +440,8 @@ impl Game {
 
     fn tick(&mut self) -> bool {
         let mut player_order = Vec::new();
-        for y in 0..self.height {
-            for x in 0..self.width {
+        for y in 0..self.field.height() {
+            for x in 0..self.field.width() {
                 match self.get(x, y) {
                     FieldType::Elf(_) | FieldType::Goblin(_) => {
                         player_order.push(Point::new(x, y));
@@ -560,7 +469,8 @@ fn level_1(line: &[String]) -> ACResult<u32> {
     let mut game = Game::new(line, 3, 3);
     let mut round = 0;
     loop {
-        println!("{}", round);
+        // println!("{}", round);
+        // game.print();
         if game.tick() {
             break;
         }
@@ -574,16 +484,12 @@ fn level_2(line: &[String]) -> ACResult<u32> {
     let goblin_attack = 3;
     let mut power = goblin_attack + 1;
     'outer: loop {
-        println!(" {}", power);
-
         let mut game = Game::new(line, power, goblin_attack);
         let mut round = 0;
         let elve_count = game.count_elves();
         loop {
-            println!("{}", round);
             let finished = game.tick();
             if game.count_elves() < elve_count {
-                println!("An elve died :(");
                 power += 1;
                 continue 'outer;
             }
