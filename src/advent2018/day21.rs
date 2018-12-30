@@ -104,9 +104,11 @@ fn level_1(input: &Input) -> ACResult<u64> {
             break;
         }
         if ip == 28 {
-            // Assume that the program checks if the current value in register 1 is equal to
+            // Assume that the program checks if the current value in register X is equal to
             // register 0. If so it halts
-            return Ok(*registers.get(1));
+            // Register X is first parameter in the last eqrr instruction.
+            let x = input.instructions[ip].get_input_a();
+            return Ok(*registers.get(x as u8));
         }
     }
 
@@ -128,11 +130,13 @@ fn level_2(input: &Input) -> ACResult<u64> {
 
         ip += 1;
         if ip == 28 {
-            // Assume that the program checks if the current value in register 1 is equal to
+            // Assume that the program checks if the current value in register X is equal to
             // register 0. If so it halts.
+            // Register X is first parameter in the last eqrr instruction.
+            let x = input.instructions[ip].get_input_a();
             // We need the value that executes the most instructions.
             // So we take the last value, before they start repeating themselves
-            let val = *registers.get(1);
+            let val = *registers.get(x as u8);
             if prev.contains(&val) {
                 return Ok(*prevs.last().unwrap());
             }

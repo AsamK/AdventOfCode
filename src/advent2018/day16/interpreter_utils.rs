@@ -236,4 +236,12 @@ impl Instruction {
             ),
         }
     }
+
+    pub fn get_input_a(&self) -> u64 {
+        self.input_a
+    }
+
+    pub fn get_input_b(&self) -> u64 {
+        self.input_b
+    }
 }

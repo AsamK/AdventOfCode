@@ -129,10 +129,12 @@ fn level_2(input: &Input) -> ACResult<u64> {
         }
 
         if ip == 1 {
-            // Shortcut for the program, assuming it wants to comput the
-            // sum of all divisors of the value in r5 when it reaches instruction #1
+            // Shortcut for the program, assuming it wants to compute the
+            // sum of all divisors of the value in rX when it reaches instruction #1
+            // register X is the second operand in the first eqrr instruction
+            let x = input.instructions[4].get_input_b();
             let mut count = 0;
-            let num = *registers.get(5);
+            let num = *registers.get(x as u8);
             for r1 in 1..=num {
                 if (num % r1) == 0 {
                     count += r1;
