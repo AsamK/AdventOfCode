@@ -383,7 +383,9 @@ impl Game {
 
         let move_to = route.unwrap();
 
-        self.set(&move_to, field.clone());
+        let new_field = field.clone();
+
+        self.set(&move_to, new_field);
         self.set(point, FieldType::Empty);
 
         if let Some(victim_point) = self.get_victim(&move_to) {
