@@ -1,9 +1,6 @@
 use crate::advent2018::day16::interpreter_utils::{Instruction, Opcode, Registers};
 use crate::errors::{ACResult, Error};
-use nom::{
-    call, complete, do_parse, error_position, many1, map, named, preceded, tag, take_while1,
-    terminated, tuple, tuple_parser,
-};
+use nom::{complete, do_parse, many1, map, named, preceded, tag, take_while1, terminated};
 use std::collections::HashSet;
 use std::io::BufRead;
 use std::io::Read;

@@ -1,9 +1,6 @@
 use crate::errors::{ACResult, Error};
 use crate::utils::Field;
-use nom::{
-    call, complete, do_parse, error_position, map, named, preceded, tag, take_while1, tuple,
-    tuple_parser,
-};
+use nom::{complete, do_parse, map, named, preceded, tag, take_while1};
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::collections::HashMap;

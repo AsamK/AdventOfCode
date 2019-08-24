@@ -1,8 +1,5 @@
 use crate::errors::{ACResult, Error};
-use nom::{
-    alt, call, complete, delimited, do_parse, error_position, flat_map, map, named, parse_to, tag,
-    take_while, tuple_parser,
-};
+use nom::{alt, complete, delimited, do_parse, flat_map, map, named, parse_to, tag, take_while};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::io::BufRead;

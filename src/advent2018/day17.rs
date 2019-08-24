@@ -1,5 +1,5 @@
 use crate::errors::{ACResult, Error};
-use nom::{alt, call, complete, do_parse, error_position, map, named, tag, take_while1};
+use nom::{alt, complete, do_parse, map, named, tag, take_while1};
 use std::io::BufRead;
 
 pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {

@@ -33,7 +33,7 @@ fn level_2(lines: &[String]) -> ACResult<usize> {
 }
 
 fn get_reacted_len(line: &str) -> usize {
-    let mut result = Vec::new();
+    let mut result = Vec::<char>::new();
     for c in line.chars() {
         if let Some(p) = result.last() {
             if c != *p && c.to_lowercase().to_string() == p.to_lowercase().to_string() {

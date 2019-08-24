@@ -1,5 +1,5 @@
 use crate::errors::{ACResult, Error};
-use nom::{call, complete, do_parse, error_position, map, named, tag, take_while};
+use nom::{complete, do_parse, map, named, tag, take_while};
 use std::collections::HashSet;
 use std::io::BufRead;
 
