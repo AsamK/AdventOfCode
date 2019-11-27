@@ -178,20 +178,16 @@ impl Circle {
 
 impl Drop for Circle {
     fn drop(&mut self) {
-        if let Some(current) = self.current {
-            let mut cur = self.current;
-            while let Some(c) = cur {
-                unsafe {
-                    cur = (*c).next;
-                    Box::from_raw(c);
-                }
-                if cur.is_none() || cur == self.current {
-                    break;
-                }
-            }
+        let mut cur = self.current;
+        while let Some(c) = cur {
             unsafe {
-                Box::from_raw(current);
+                cur = (*c).next;
+                Box::from_raw(c);
+            }
+            if cur == self.current {
+                break;
             }
         }
+        self.current = None;
     }
 }
