@@ -1,5 +1,6 @@
 use crate::errors::{ACResult, Error};
-use nom::{complete, do_parse, flat_map, named, parse_to, tag, take_while};
+use nom::{character::complete::digit1, combinator::map, IResult};
+use nom::{do_parse, tag};
 use std::io::BufRead;
 
 pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {
@@ -18,17 +19,17 @@ struct FabricPieceInfo {
     height: usize,
 }
 
-named!(
-    number<nom::types::CompleteStr<'_>, usize>,
-    flat_map!(
-        complete!(take_while!(|c: char| c.is_digit(10))),
-        parse_to!(usize)
-    )
-);
+fn number(input: &str) -> IResult<&str, usize> {
+    map(digit1, |s: &str| {
+        s.parse()
+            .map_err(|_e| nom::Err::Error(("", nom::error::ErrorKind::ParseTo)))
+            .unwrap()
+    })(input)
+}
 
-named!(
-    info_line<nom::types::CompleteStr<'_>, FabricPieceInfo>,
+fn info_line(input: &str) -> IResult<&str, FabricPieceInfo> {
     do_parse!(
+        input,
         tag!("#")
             >> i: number
             >> tag!(" @ ")
@@ -47,7 +48,7 @@ named!(
                 height
             })
     )
-);
+}
 
 struct FabricPiece {
     inner: Vec<bool>,
@@ -87,7 +88,7 @@ fn get_max_width_height((w, h): (usize, usize), info: &FabricPieceInfo) -> (usiz
 fn level_1(lines: &[String]) -> ACResult<usize> {
     let infos = lines
         .iter()
-        .map(|line| info_line(nom::types::CompleteStr(&line)).map(|x| x.1))
+        .map(|line| info_line(&line).map(|x| x.1))
         .collect::<Result<Vec<FabricPieceInfo>, _>>()
         .map_err(|_| Error::new_str("Failed to parse blueprint"))?;
 
@@ -122,7 +123,7 @@ fn level_1(lines: &[String]) -> ACResult<usize> {
 fn level_2(lines: &[String]) -> ACResult<usize> {
     let infos = lines
         .iter()
-        .map(|line| info_line(nom::types::CompleteStr(&line)).map(|x| x.1))
+        .map(|line| info_line(&line).map(|x| x.1))
         .collect::<Result<Vec<FabricPieceInfo>, _>>()
         .map_err(|_| Error::new_str("Failed to parse blueprint"))?;
 

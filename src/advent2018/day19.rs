@@ -19,7 +19,7 @@ fn parse_line<T: Read>(mut data: T) -> ACResult<Input> {
 
     parse_input(&contents)
         .map(|x| x.1)
-        .map_err(|e| Error::new(format!("Failed to parse input: {}", e)))
+        .map_err(|_e| Error::new("Failed to parse input".to_owned()))
 }
 
 const REGISTER_COUNT: usize = 6;

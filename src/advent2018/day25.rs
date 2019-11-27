@@ -1,5 +1,6 @@
 use crate::errors::{ACResult, Error};
-use nom::{complete, do_parse, map, named, tag, take_while};
+use nom::{bytes::complete::take_while, combinator::map, IResult};
+use nom::{do_parse, named, tag};
 use std::collections::HashSet;
 use std::io::BufRead;
 
@@ -25,19 +26,16 @@ impl Position {
     }
 }
 
-named!(
-    number<nom::types::CompleteStr<'_>, i64>,
-    map!(
-        complete!(take_while!(|c: char| c == '-'
-            || c == ' '
-            || c.is_digit(10))),
-        |s| s.trim().parse().unwrap()
-    )
-);
+fn number(input: &str) -> IResult<&str, i64> {
+    map(
+        take_while(|c: char| c == '-' || c == ' ' || c.is_digit(10)),
+        |s: &str| s.trim().parse().unwrap(),
+    )(input)
+}
 
 // 9,-1,5,3
 named!(
-    parse_pos<nom::types::CompleteStr<'_>, Position>,
+    parse_pos<&str, Position>,
     do_parse!(
         x: number
             >> tag!(",")
@@ -51,10 +49,7 @@ named!(
 );
 
 fn level_1(lines: &[String]) -> ACResult<usize> {
-    let positions: Vec<_> = lines
-        .iter()
-        .map(|l| parse_pos(nom::types::CompleteStr(l)).unwrap().1)
-        .collect();
+    let positions: Vec<_> = lines.iter().map(|l| parse_pos(l).unwrap().1).collect();
 
     let mut constellations: Vec<Vec<Position>> = Vec::new();
     let mut used = HashSet::new();

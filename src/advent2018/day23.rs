@@ -1,5 +1,6 @@
 use crate::errors::{ACResult, Error};
-use nom::{complete, do_parse, map, named, tag, take_while};
+use nom::{bytes::complete::take_while, combinator::map, IResult};
+use nom::{do_parse, named, tag};
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::io::BufRead;
@@ -43,19 +44,16 @@ struct Bot {
     range: i64,
 }
 
-named!(
-    number<nom::types::CompleteStr<'_>, i64>,
-    map!(
-        complete!(take_while!(|c: char| c == '-'
-            || c == ' '
-            || c.is_digit(10))),
-        |s| s.trim().parse().unwrap()
-    )
-);
+fn number(input: &str) -> IResult<&str, i64> {
+    map(
+        take_while(|c: char| c == '-' || c == ' ' || c.is_digit(10)),
+        |s: &str| s.trim().parse().unwrap(),
+    )(input)
+}
 
 // pos=<9,-1>, r=432
 named!(
-    parse_bot<nom::types::CompleteStr<'_>, Bot>,
+    parse_bot<&str, Bot>,
     do_parse!(
         tag!("pos=<")
             >> x: number
@@ -73,10 +71,7 @@ named!(
 );
 
 fn level_1(lines: &[String]) -> ACResult<usize> {
-    let bots: Vec<_> = lines
-        .iter()
-        .map(|l| parse_bot(nom::types::CompleteStr(l)).unwrap().1)
-        .collect();
+    let bots: Vec<_> = lines.iter().map(|l| parse_bot(l).unwrap().1).collect();
 
     let max_bot = bots.iter().max_by_key(|b| b.range).unwrap();
 
@@ -89,10 +84,7 @@ fn level_1(lines: &[String]) -> ACResult<usize> {
 }
 
 fn level_2(lines: &[String]) -> ACResult<i64> {
-    let bots: Vec<_> = lines
-        .iter()
-        .map(|l| parse_bot(nom::types::CompleteStr(l)).unwrap().1)
-        .collect();
+    let bots: Vec<_> = lines.iter().map(|l| parse_bot(l).unwrap().1).collect();
 
     let min = Position {
         x: bots.iter().min_by_key(|b| b.position.x).unwrap().position.x,
