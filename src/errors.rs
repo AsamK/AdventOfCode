@@ -1,4 +1,5 @@
 use std::fmt;
+use std::fmt::Debug;
 
 pub struct Error {
     repr: String,
@@ -29,5 +30,11 @@ impl fmt::Display for Error {
 }
 
 impl std::error::Error for Error {}
+
+impl<E: Debug> From<nom::Err<E>> for Error {
+    fn from(e: nom::Err<E>) -> Self {
+        Error::new(format!("Failed to parse: {:?}", e))
+    }
+}
 
 pub type ACResult<T> = Result<T, Error>;
