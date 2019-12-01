@@ -5,6 +5,7 @@ use clap::{App, Arg};
 use serde::Deserialize;
 use std::io::Read;
 
+mod advent2015;
 mod advent2017;
 mod advent2018;
 mod advent2019;
@@ -143,6 +144,7 @@ fn main() -> ACResult<()> {
     let data = std::io::BufReader::new(input_file);
 
     let result = match year {
+        2015 => advent2015::get_result(data, day, level),
         2017 => advent2017::get_result(data, day, level),
         2018 => advent2018::get_result(data, day, level),
         2019 => advent2019::get_result(data, day, level),
