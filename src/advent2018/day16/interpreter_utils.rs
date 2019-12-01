@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Registers {
     data: Vec<u64>,
@@ -173,75 +175,90 @@ impl Instruction {
         }
     }
 
-    #[allow(dead_code)]
-    pub fn to_string(&self) -> String {
-        match self.opcode {
-            Opcode::Addr => format!(
-                "r{} = r{} + r{}",
-                self.output_register, self.input_a, self.input_b
-            ),
-            Opcode::Addi => format!(
-                "r{} = r{} + {}",
-                self.output_register, self.input_a, self.input_b
-            ),
-            Opcode::Mulr => format!(
-                "r{} = r{} * r{}",
-                self.output_register, self.input_a, self.input_b
-            ),
-            Opcode::Muli => format!(
-                "r{} = r{} + {}",
-                self.output_register, self.input_a, self.input_b
-            ),
-            Opcode::Banr => format!(
-                "r{} = r{} & r{}",
-                self.output_register, self.input_a, self.input_b
-            ),
-            Opcode::Bani => format!(
-                "r{} = r{} & {}",
-                self.output_register, self.input_a, self.input_b
-            ),
-            Opcode::Borr => format!(
-                "r{} = r{} | r{}",
-                self.output_register, self.input_a, self.input_b
-            ),
-            Opcode::Bori => format!(
-                "r{} = r{} | {}",
-                self.output_register, self.input_a, self.input_b
-            ),
-            Opcode::Setr => format!("r{} = r{}", self.output_register, self.input_a),
-            Opcode::Seti => format!("r{} = {}", self.output_register, self.input_a),
-            Opcode::Gtir => format!(
-                "r{} = {} > r{}",
-                self.output_register, self.input_a, self.input_b
-            ),
-            Opcode::Gtri => format!(
-                "r{} = r{} > {}",
-                self.output_register, self.input_a, self.input_b
-            ),
-            Opcode::Gtrr => format!(
-                "r{} = r{} > r{}",
-                self.output_register, self.input_a, self.input_b
-            ),
-            Opcode::Eqir => format!(
-                "r{} = {} == r{}",
-                self.output_register, self.input_a, self.input_b
-            ),
-            Opcode::Eqri => format!(
-                "r{} = r{} == {}",
-                self.output_register, self.input_a, self.input_b
-            ),
-            Opcode::Eqrr => format!(
-                "r{} = r{} == r{}",
-                self.output_register, self.input_a, self.input_b
-            ),
-        }
-    }
-
     pub fn get_input_a(&self) -> u64 {
         self.input_a
     }
 
     pub fn get_input_b(&self) -> u64 {
         self.input_b
+    }
+}
+
+impl Display for Instruction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.opcode {
+            Opcode::Addr => write!(
+                f,
+                "r{} = r{} + r{}",
+                self.output_register, self.input_a, self.input_b
+            ),
+            Opcode::Addi => write!(
+                f,
+                "r{} = r{} + {}",
+                self.output_register, self.input_a, self.input_b
+            ),
+            Opcode::Mulr => write!(
+                f,
+                "r{} = r{} * r{}",
+                self.output_register, self.input_a, self.input_b
+            ),
+            Opcode::Muli => write!(
+                f,
+                "r{} = r{} + {}",
+                self.output_register, self.input_a, self.input_b
+            ),
+            Opcode::Banr => write!(
+                f,
+                "r{} = r{} & r{}",
+                self.output_register, self.input_a, self.input_b
+            ),
+            Opcode::Bani => write!(
+                f,
+                "r{} = r{} & {}",
+                self.output_register, self.input_a, self.input_b
+            ),
+            Opcode::Borr => write!(
+                f,
+                "r{} = r{} | r{}",
+                self.output_register, self.input_a, self.input_b
+            ),
+            Opcode::Bori => write!(
+                f,
+                "r{} = r{} | {}",
+                self.output_register, self.input_a, self.input_b
+            ),
+            Opcode::Setr => write!(f, "r{} = r{}", self.output_register, self.input_a),
+            Opcode::Seti => write!(f, "r{} = {}", self.output_register, self.input_a),
+            Opcode::Gtir => write!(
+                f,
+                "r{} = {} > r{}",
+                self.output_register, self.input_a, self.input_b
+            ),
+            Opcode::Gtri => write!(
+                f,
+                "r{} = r{} > {}",
+                self.output_register, self.input_a, self.input_b
+            ),
+            Opcode::Gtrr => write!(
+                f,
+                "r{} = r{} > r{}",
+                self.output_register, self.input_a, self.input_b
+            ),
+            Opcode::Eqir => write!(
+                f,
+                "r{} = {} == r{}",
+                self.output_register, self.input_a, self.input_b
+            ),
+            Opcode::Eqri => write!(
+                f,
+                "r{} = r{} == {}",
+                self.output_register, self.input_a, self.input_b
+            ),
+            Opcode::Eqrr => write!(
+                f,
+                "r{} = r{} == r{}",
+                self.output_register, self.input_a, self.input_b
+            ),
+        }
     }
 }
