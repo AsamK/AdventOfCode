@@ -7,6 +7,7 @@ use std::io::Read;
 
 mod advent2017;
 mod advent2018;
+mod advent2019;
 mod errors;
 mod utils;
 
@@ -144,6 +145,7 @@ fn main() -> ACResult<()> {
     let result = match year {
         2017 => advent2017::get_result(data, day, level),
         2018 => advent2018::get_result(data, day, level),
+        2019 => advent2019::get_result(data, day, level),
         _ => Err(Error::new(format!("Year {} is not implemented", year))),
     }?;
 

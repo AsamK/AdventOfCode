@@ -5,11 +5,12 @@ authors = ["AsamK"]
 edition = "2018"
 
 [dependencies]
-clap = "2"
 chrono = "0.4"
+clap = "2"
+itertools = "0.8"
 nom = "5"
-xdg = "2"
-toml = "0.5"
-serde = { version = '1', features = ['derive'] }
-reqwest = "0.9"
 rayon = "1"
+reqwest = "0.9"
+serde = { version = '1', features = ['derive'] }
+toml = "0.5"
+xdg = "2"
