@@ -37,3 +37,23 @@ fn compute_fuel(mass: u64) -> u64 {
 
     fuel + compute_fuel(fuel)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn run_level_1_examples() {
+        assert_eq!(level_1(&["12".to_owned()]), Ok(2));
+        assert_eq!(level_1(&["14".to_owned()]), Ok(2));
+        assert_eq!(level_1(&["1969".to_owned()]), Ok(654));
+        assert_eq!(level_1(&["100756".to_owned()]), Ok(33583));
+    }
+
+    #[test]
+    fn run_level_2_examples() {
+        assert_eq!(level_2(&["14".to_owned()]), Ok(2));
+        assert_eq!(level_2(&["1969".to_owned()]), Ok(966));
+        assert_eq!(level_2(&["100756".to_owned()]), Ok(50346));
+    }
+}

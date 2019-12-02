@@ -1,6 +1,7 @@
 use std::fmt;
 use std::fmt::Debug;
 
+#[derive(PartialEq)]
 pub struct Error {
     repr: String,
 }
