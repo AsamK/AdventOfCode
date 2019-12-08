@@ -22,7 +22,7 @@ fn level_1(lines: &[String]) -> ACResult<u32> {
     let mut next = vec!["COM".to_owned()];
     let mut orbit_count = 0;
     let mut level = 0;
-    while next.len() > 0 {
+    while !next.is_empty() {
         let list = next;
         level += 1;
         next = Vec::new();
