@@ -3,8 +3,8 @@ use std::io::BufRead;
 
 pub fn get_result<T: BufRead>(data: T, level: u8) -> ACResult<String> {
     match level {
-        1 => level_1(&crate::utils::read_lines(data)?[0]),
-        2 => level_2(&crate::utils::read_lines(data)?[0]),
+        1 => level_1(&crate::utils::read_line(data)?),
+        2 => level_2(&crate::utils::read_line(data)?),
         _ => Err(Error::new(format!("Level {} not implemented", level))),
     }
     .map(|r| r.to_string())

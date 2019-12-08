@@ -1,6 +1,15 @@
 use crate::errors::{ACResult, Error};
 use std::io::{BufRead, Read};
 
+pub fn read_line<T: BufRead>(data: T) -> ACResult<String> {
+    let line = data
+        .lines()
+        .take(1)
+        .collect::<Result<String, _>>()
+        .map_err(|_| Error::new_str("Failed to read lines"))?;
+    Ok(line)
+}
+
 pub fn read_lines<T: BufRead>(data: T) -> ACResult<Vec<String>> {
     let lines = data
         .lines()
