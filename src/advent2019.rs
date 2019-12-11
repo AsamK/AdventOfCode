@@ -11,6 +11,7 @@ mod day07;
 mod day08;
 mod day09;
 mod day10;
+mod day11;
 
 pub fn get_result<T: Read + BufRead>(data: T, day: u8, level: u8) -> ACResult<String> {
     match day {
@@ -24,6 +25,7 @@ pub fn get_result<T: Read + BufRead>(data: T, day: u8, level: u8) -> ACResult<St
         8 => day08::get_result(data, level),
         9 => day09::get_result(data, level),
         10 => day10::get_result(data, level),
+        11 => day11::get_result(data, level),
         _ => Err(Error::new(format!("Day {} not implemented", day))),
     }
 }
